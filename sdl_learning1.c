@@ -19,8 +19,9 @@ TO RUN:
 #define M_PI 3.14159265
 #define WINDOW_POSX 200       // initial position of the window: x
 #define WINDOW_POSY 200       // initial position of the window: y
+#define MAXSTRING 20
 
-SDL_Window* g_pWindow = NULL;
+//SDL_Window* g_pWindow = NULL;
 SDL_Renderer* g_pRenderer = NULL;
 
 typedef struct{
@@ -30,77 +31,43 @@ typedef struct{
     int raio;
     char cor[20];
     char tipo[3];
-}PONTO; // pontos que unidos formam as ferroests
+}PONTO; // pontos que unidos formam as ferrovias
 
-void renderRailroad (SDL_Renderer * g_pRenderer, PONTO _via[], int NUMVIA, PONTO _estacoes[], int NUMESTACAO);
-//void filledCircleRGBA(SDL_Renderer * g_pRenderer, int _circleX, int _circleY, int _circleR, int _r, int _g, int _b);
+typedef struct{
+	int r;
+	int g;
+	int b;
+}COR;  //para passar de uma string para valores inteiros
+
+void renderRailroad (SDL_Renderer * g_pRenderer, PONTO _via[10], int NUMVIA, PONTO _estacoes[10], int NUMESTACAO);
 void InitEverything(int width, int height, TTF_Font **_font, SDL_Window** _window, SDL_Renderer** g_pRenderer);
 SDL_Window* CreateWindow(int width, int height);
 SDL_Renderer* CreateRenderer(int width, int height, SDL_Window *_window);
 void InitFont();
+void filledCircleRGBA(SDL_Renderer * g_pRenderer, int _circleX, int _circleY, int _circleR, int _r, int _g, int _b);
 
-
-
-void filledCircleRGBA(SDL_Renderer * g_pRenderer, int _circleX, int _circleY, int _circleR, int _r, int _g, int _b)
-{
-    int off_x = 0;
-    int off_y = 0;
-    float degree = 0.0;
-    float step = M_PI / (_circleR*8);
-    
-    SDL_SetRenderDrawColor(g_pRenderer, _r, _g, _b, 255);
-    
-    while (_circleR > 0)
-    {
-        for (degree = 0.0; degree < M_PI/2; degree+=step)
-        {
-            off_x = (int)(_circleR * cos(degree));
-            off_y = (int)(_circleR * sin(degree));
-            SDL_RenderDrawPoint(g_pRenderer, _circleX+off_x, _circleY+off_y);
-            SDL_RenderDrawPoint(g_pRenderer, _circleX-off_y, _circleY+off_x);
-            SDL_RenderDrawPoint(g_pRenderer, _circleX-off_x, _circleY-off_y);
-            SDL_RenderDrawPoint(g_pRenderer, _circleX+off_y, _circleY-off_x);
-        }
-        _circleR--;
-    }
-}
 
 int main(int argc, char* args[])
 {
 	int dimx, dimy; //serão definidos no ficheiro config;
+	SDL_Window *window = NULL;
+    SDL_Renderer *renderer = NULL;
+    TTF_Font *serif = NULL;
+    SDL_Event event;
+    int delay = 150;
+    int quit = 0;
 
 	//--->TEMPORÁRIO<---//
 	dimx = 1080;
 	dimy = 720;
 
-	//initialize SDL
-	if(SDL_Init(SDL_INIT_EVERYTHING) >= 0){
-		//if init ok, create window
-		g_pWindow = SDL_CreateWindow("Linha Ferroviária", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED
-			, dimx, dimy, SDL_WINDOW_SHOWN);
 
-		//if the createwindow ok, create renderer
-		if(g_pWindow != 0){
-			g_pRenderer = SDL_CreateRenderer(g_pWindow, -1, 0);
-		}
-	}
-	else{
-		return 1;  //big problem time :(
-	}
+	InitEverything(dimx, dimy, &serif, &window, &g_pRenderer);
 
-	//Let's get this bread
-
-	//set to black <- expects R G B and alpha
-	SDL_SetRenderDrawColor(g_pRenderer, 0, 0, 0, 255);
-
-	//clear the window to black
-	SDL_RenderClear(g_pRenderer);
-
-	
 	//--->TEMPORÁRIO<---//
 	//valores terão de ser originários do ficheiro config
 
-	PONTO p1, p2, p3, p4;   //<------PONTOS DE VIA (não constam na janela gráfica)
+	PONTO p1, p2, p3;   //<------PONTOS DE VIA (não constam na janela gráfica)
 
 	p1.x = 50;
 	p1.y = 50;
@@ -110,10 +77,6 @@ int main(int argc, char* args[])
 
 	p3.x = 500;
 	p3.y = 200;
-
-	p4.x = 300;
-	p4.y = 500;
-
 
 	PONTO est1, est2, est3;
 
@@ -129,54 +92,33 @@ int main(int argc, char* args[])
 	PONTO pontos_de_via[3] = {p1, p2, p3};
 	PONTO estacoes[3] = {est1, est2, est3};
 
-	//Set render color to blue (rectangle will be rendered in this color)
-	//SDL_SetRenderDrawColor(g_pRenderer, 0, 0, 255, 255);
 
-	//SDL_RenderDrawLine(g_pRenderer, est1.x, est1.y, est2.x, est2.y);
+	while( quit == 0 )
+	    {
+	        // while there's events to handle
+	        while( SDL_PollEvent( &event ) )
+	        {
+	            if( event.type == SDL_QUIT )
+	            {
+	                quit = 1;
+	                return 0;
+	            }
+	        }  
+	        // render board
+	        renderRailroad(g_pRenderer, pontos_de_via, 3, estacoes, 3);
+	        // render in the screen all changes above
+	        SDL_RenderPresent(g_pRenderer);
+	        // add a delay (defines the speed of the trains)
+	        SDL_Delay( delay );
+	    }
 
-	//render das estações (círculos)
-	filledCircleRGBA(g_pRenderer, est1.x, est1.y, 20, 255, 0, 0);
 
-	filledCircleRGBA(g_pRenderer, est2.x, est2.y, 20, 255, 0, 0);
-
-	filledCircleRGBA(g_pRenderer, est3.x, est3.y, 20, 255, 0, 0);
-
-	filledCircleRGBA(g_pRenderer, p1.x, p1.y, 5, 255, 255, 0);
-
-	filledCircleRGBA(g_pRenderer, p2.x, p2.y, 5, 255, 255, 0);
-
-	filledCircleRGBA(g_pRenderer, p3.x, p3.y, 5, 255, 255, 0);
-
-	filledCircleRGBA(g_pRenderer, p4.x, p4.y, 5, 255, 255, 0);
-	
-
-//	void renderRailroad (SDL_Renderer * g_pRenderer, PONTO _via[], int NUMVIA, PONTO _estacoes[], int NUMESTACAO){
-//		for(int i = 0; i < NUMVIA-1; i++){
-//			//Set render color to blue (rectangle will be rendered in this color)
-//			SDL_SetRenderDrawColor(g_pRenderer, 0, 0, 255, 255);
-//
-//			SDL_RenderDrawLine(g_pRenderer, _estacoes[i].x, _estacoes[i].y, _estacoes[i+1].x, _estacoes[i+1].y);
-//
-//			//show the window
-//			SDL_RenderPresent(g_pRenderer);
-//		}
-//	}
-
-	//SDL_SetRenderDrawColor(g_pRenderer, 255, 0, 0, 255);
-	//SDL_RenderDrawLine(g_pRenderer, x1, y1, x2, y2);
-	//SDL_RenderDrawLine(g_pRenderer, x2, y2, x3, y3);
-
-	//show the window
-	SDL_RenderPresent(g_pRenderer);
-
-	//renderRailroad(g_pRenderer, pontos_de_via, 3, estacoes, 3);
-
-	//set a delay before quitting
-	SDL_Delay(10000);
-
-	//clean up SDL
-	SDL_Quit();
-	return 0;
+// free memory allocated and closes everything including fonts
+    TTF_CloseFont(serif);
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
+    return 0;
 }
 
 
@@ -267,24 +209,102 @@ void InitFont()
 }
 
 
-int delay = 150;
-while( quit == 0 )
+
+void renderRailroad (SDL_Renderer * g_pRenderer, PONTO _via[10], int NUMVIA, PONTO _estacoes[10], int NUMESTACAO){
+	for(int i = 0; i < NUMVIA-1; i++){
+		//Set render color to blue (rectangle will be rendered in this color)
+		SDL_SetRenderDrawColor(g_pRenderer, 0, 0, 255, 255);
+
+		SDL_RenderDrawLine(g_pRenderer, _estacoes[i].x, _estacoes[i].y, _estacoes[i+1].x, _estacoes[i+1].y);
+
+		//show the window
+		//SDL_RenderPresent(g_pRenderer);
+	}
+	return;
+}
+
+
+void filledCircleRGBA(SDL_Renderer * g_pRenderer, int _circleX, int _circleY, int _circleR, int _r, int _g, int _b)
+{
+    int off_x = 0;
+    int off_y = 0;
+    float degree = 0.0;
+    float step = M_PI / (_circleR*8);
+    
+    SDL_SetRenderDrawColor(g_pRenderer, _r, _g, _b, 255);
+    
+    while (_circleR > 0)
     {
-        // while there's events to handle
-        while( SDL_PollEvent( &event ) )
+        for (degree = 0.0; degree < M_PI/2; degree+=step)
         {
-            if( event.type == SDL_QUIT )
-            {
-                quit = 1;
-                return 0;
-            }
-          
-        // render game table
-        square_size_px = RenderTable( board_pos_x, board_pos_y, board_size_px, serif, imgs, renderer);
-        // render board
-        renderRailroad(g_pRenderer, pontos_de_via, 3, estacoes, 3);
-        // render in the screen all changes above
-        SDL_RenderPresent(renderer);
-        // add a delay (defines the speed of the trains)
-        SDL_Delay( delay );
+            off_x = (int)(_circleR * cos(degree));
+            off_y = (int)(_circleR * sin(degree));
+            SDL_RenderDrawPoint(g_pRenderer, _circleX+off_x, _circleY+off_y);
+            SDL_RenderDrawPoint(g_pRenderer, _circleX-off_y, _circleY+off_x);
+            SDL_RenderDrawPoint(g_pRenderer, _circleX-off_x, _circleY-off_y);
+            SDL_RenderDrawPoint(g_pRenderer, _circleX+off_y, _circleY-off_x);
+        }
+        _circleR--;
     }
+    return;
+}
+
+COR stringRGB (PONTO temporario){
+	char valor_alterado[MAXSTRING];
+	COR rgb_value;
+	strcpy(valor_alterado, temporario.cor);
+	if(strcmp (valor_alterado, VERMELHO) == 0){
+		rgb_value.r = 255;
+		rgb_value.g = 0;
+		rgb_value.b = 0;
+	}
+	if(strcmp (valor_alterado, ROXO) == 0){
+		rgb_value.r = 102;
+		rgb_value.g = 0;
+		rgb_value.b = 102;
+	}
+	if(strcmp (valor_alterado, AZUL) == 0){
+		rgb_value.r = 0;
+		rgb_value.g = 0;
+		rgb_value.b = 255;
+	}
+	if(strcmp (valor_alterado, CYAN) == 0){
+		rgb_value.r = 0;
+		rgb_value.g = 255;
+		rgb_value.b = 255;
+	}
+	if(strcmp (valor_alterado, VERDE) == 0){
+		rgb_value.r = 0;
+		rgb_value.g = 255;
+		rgb_value.b = 0;
+	}
+	if(strcmp (valor_alterado, AMARELO) == 0){
+		rgb_value.r = 255;
+		rgb_value.g = 255;
+		rgb_value.b = 0;
+	}
+	if(strcmp (valor_alterado, CASTANHO) == 0){
+		rgb_value.r = 102;
+		rgb_value.g = 51;
+		rgb_value.b = 0;
+	}
+	if(strcmp (valor_alterado, PRETO) == 0){
+		rgb_value.r = 0;
+		rgb_value.g = 0;
+		rgb_value.b = 0;
+	}
+	if(strcmp (valor_alterado, BRANCO) == 0){
+		rgb_value.r = 255;
+		rgb_value.g = 255;
+		rgb_value.b = 255;
+	}
+	if(strcmp (valor_alterado, CINZENTO) == 0){
+		rgb_value.r = 192;
+		rgb_value.g = 192;
+		rgb_value.b = 192;
+	}
+	else{
+		rgb_value.r=rgb_value.g=rgb_value.b=256;
+	}
+	return rgb_value;
+}
