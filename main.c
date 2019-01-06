@@ -1,11 +1,16 @@
+/*
+    Pedro Machado ( ist190157 ) | 
+                                |   12/2018
+    Rafael Ferreira (ist190173) | 
+*/
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <SDL.h>
 #include <SDL2/SDL_ttf.h>
-#include "funcoes.h"
 #include <math.h>
-
+#include "funcoes.h"
 
 int main(int argc, char *argv[])
 {
@@ -20,7 +25,9 @@ int main(int argc, char *argv[])
     char **dados; // matriz dinâmica para guardar os dados do ficheiro
     int num_linhas = 0; // número de linhas do ficheiro config
 
-    int dimx, dimy; //serão definidos no ficheiro config;
+    JANELA janela; //será definido no ficheiro config
+    SDL_Renderer* g_pRenderer = NULL; 
+    SDL_Window *window = NULL;         
     TTF_Font *serif = NULL;
     SDL_Event event;
     int delay = 150;
@@ -83,7 +90,6 @@ int main(int argc, char *argv[])
         }
     }
 
-
     // leitura do config
     verificador = lerconfig(argv[1], dados, &num_linhas);
 
@@ -111,7 +117,7 @@ int main(int argc, char *argv[])
 
     // processamento dos dados
     processacomboio(comboios, &num_comboios, num_linhas, dados);
-
+    janela = tamanhoJanela(janela, num_linhas, dados);
     verificador = processaferrovias(ferrovias, &num_ferrovias, num_linhas, dados);
     if (verificador == -1) {
         // desalocação de memória
@@ -162,22 +168,127 @@ int main(int argc, char *argv[])
                 free(ferrovias);
 
                 printf("\n"); // por questões estéticas
+
                 return 0; // saída do programa
             case 1:
+                verificador = menu1(ferrovias, num_ferrovias); // apresenta o menu e imprime a ferrovia
+                if (verificador == -1) {
+
+                    // desalocação de memória
+                    for (i = 0; i < num_comboios; i++) {
+                        free(comboios[i]);
+                    }
+                    free(comboios);
+
+                    for (i = 0; i < num_ferrovias; i++) {
+                        free(ferrovias[i]->dados);
+                        free(ferrovias[i]);
+                    }
+                    free(ferrovias);
+
+                    printf("\n"); // por questões estéticas
+
+                    return -1; // saída do programa
+
+                }
+
                 break;
             case 2:
+                /*verificador = menu2(ferrovias, &num_ferrovias);
+
+                if (verificador == -1) {
+                    // desalocação de memória
+                    for (i = 0; i < num_comboios; i++) {
+                        free(comboios[i]);
+                    }
+                    free(comboios);
+
+                    for (i = 0; i < num_ferrovias; i++) {
+                        free(ferrovias[i]->dados);
+                        free(ferrovias[i]);
+                    }
+                    free(ferrovias);
+
+                    printf("\n"); // por questões estéticas
+
+                    return -1; // saída do programa
+
+                }*/
+
                 break;
             case 3:
+                verificador = menu3(comboios, num_comboios);
+
+                if (verificador == -1) {
+                    // desalocação de memória
+                    for (i = 0; i < num_comboios; i++) {
+                        free(comboios[i]);
+                    }
+                    free(comboios);
+
+                    for (i = 0; i < num_ferrovias; i++) {
+                        free(ferrovias[i]->dados);
+                        free(ferrovias[i]);
+                    }
+                    free(ferrovias);
+
+                    printf("\n"); // por questões estéticas
+
+                    return -1; // saída do programa
+
+                }
+
                 break;
             case 4:
+                verificador = menu4(comboios, &num_comboios);
+
+                if (verificador == -1) {
+                    // desalocação de memória
+                    for (i = 0; i < num_comboios; i++) {
+                        free(comboios[i]);
+                    }
+                    free(comboios);
+
+                    for (i = 0; i < num_ferrovias; i++) {
+                        free(ferrovias[i]->dados);
+                        free(ferrovias[i]);
+                    }
+                    free(ferrovias);
+
+                    printf("\n"); // por questões estéticas
+
+                    return -1; // saída do programa
+
+                }
+
                 break;
             case 5:
+                verificador = menu5(comboios, &num_comboios);
+                if (verificador == -1) {
+
+                    // desalocação de memória
+                    for (i = 0; i < num_comboios; i++) {
+                        free(comboios[i]);
+                    }
+                    free(comboios);
+
+                    for (i = 0; i < num_ferrovias; i++) {
+                        free(ferrovias[i]->dados);
+                        free(ferrovias[i]);
+                    }
+                    free(ferrovias);
+
+                    printf("\n"); // por questões estéticas
+
+                    return -1; // saída do programa
+
+                }
+
                 break;
             case 6:
+                //janela = tamanhoJanela(janela, num_linhas, dados);
 
-                tamanhoJanela(&dimx, &dimy, num_linhas, dados);
-
-                InitEverything(dimx, dimy, &serif, &window, &g_pRenderer);
+                InitEverything(janela.dimx, janela.dimy, &serif, &window, &g_pRenderer);
                 while( quit == 0 )
                 {
                     // enquanto houverem eventos

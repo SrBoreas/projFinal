@@ -1,0 +1,37 @@
+% JANELA: palavra-chave seguido das dimensões x y da janela gráfica
+JANELA: 1920 1080
+% LINHA: – palavra-chave seguido do identificador
+LINHA: COA
+% Informacao dos pontos, ordem implica sentido de ligação
+
+C1 207 129 AZUL VIA 
+C2 53 470 AZUL EST 
+C3 82 600 AZUL VIA
+C4 286 961 AZUL VIA 
+C6 510 902 AZUL EST
+C7 778 823 AZUL VIA
+C8 1028 746 AZUL EST
+C9 1343 807 AZUL VIA
+C10 1127 538 AZUL VIA
+C19 837 172 VERMELHO EST
+
+FIM_DE_LINHA: COA
+% LINHA: – palavra-chave seguido do identificador
+LINHA: LAM 
+P1 200 200 VERDE EST
+P2 200 210 AMARELO  VIA
+P10 300 300 AMARELO  VIA
+FIM_DE_LINHA: LAM
+%LIGAR:  palavra-chave para ligar linhas 
+%        (saída de uma linha -> entrada na outra linha)
+LIGAR: COA C20 LAM P1
+LIGAR  LAM P10 COA C1
+% COMBOIO: Palavra chave para identificar um comboio
+COMBOIO: C1 3 VERMELHO COA C1  10
+COMBOIO: C2 3 AZUL     LAM P1  5
+COMBOIO: C3 3 ROXO     COA C2  15
+COMBOIO: C4 3 BRANCO   LAM P2  5
+COMBOIO: C5 3 CASTANHO COA C3  20
+COMBOIO: C6 3 AMARELO  LAM P3  2
+
+

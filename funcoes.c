@@ -49,6 +49,7 @@ int menu(void) {
         printf("Selecione a opção novamente: ");
         k = scanf("%d", &opcao);
     }
+    flushinput();
 
     return opcao; // retorno da opção selecionada
 }
@@ -73,8 +74,10 @@ int lerconfig(char config[], char **dados, int *num_linhas) {
     // leitura do ficheiro
    do {
         fgets(dados[*num_linhas], LINEMAX, fp);
-        if (strncmp(dados[*num_linhas], "%", sizeof(char)) != 0 && strspn(dados[*num_linhas], " \n\r\t") != strlen(dados[*num_linhas])) {
-            (*num_linhas)++;
+        if (strncmp(dados[*num_linhas], "%", sizeof(char)) != 0 && 
+            strspn(dados[*num_linhas], " \n\r\t") != strlen(dados[*num_linhas])) 
+        {        
+                (*num_linhas)++;
         }
    }while(feof(fp) == 0);
 
@@ -84,22 +87,22 @@ int lerconfig(char config[], char **dados, int *num_linhas) {
     return 0; // caso de sucesso na abertura do ficheiro
 }
 
+
 /*
 ** tamanhoJanela : Recebe o config e devolve o tamanho da janela gráfica
 */
-void tamanhoJanela(int *_width, int *_height, int num_linhas, char **dadosconfig) {
+JANELA tamanhoJanela(JANELA _janela, int num_linhas, char **dadosconfig) {
 
     // declaração das variáveis
     int i; // contador
-    char str[7]; // string extra para o sscanf (7 caracters: "JANELA:")
+    char str[8]; // string extra para o sscanf (7 caracters: "JANELA:")
 
     for (i = 0; i < num_linhas; i++) {
             if ((strncmp(dadosconfig[i], "JANELA:", 7*sizeof(char))) == 0) {
-                sscanf(dadosconfig[i], "%s %d %d ", str, _width, _height);
+                sscanf(dadosconfig[i], "%s %d %d", str, &_janela.dimx, &_janela.dimy);
             }
     }
-
-    return;   
+    return _janela;   
 }
 
 /*
@@ -109,8 +112,7 @@ void processacomboio(COMBOIO **comboios, int *num_comboios, int num_linhas, char
 
     // declaração das variáveis
     int i; // contador
-    char str[8]; // string extra para o sscanf (8 caracters: "COMBOIO:")
-
+    char str[8]; // string extra para o sscanf (8 caracters: "COMBOIO:")+
 
     // processamento dos dados
     for (i = 0; i < num_linhas; i++) {
@@ -137,33 +139,27 @@ int processaferrovias(LINHA **ferrovias, int *num_ferrovias, int num_linhas, cha
     // declaração das variáveis
     int i, j = 0; // contador
     int escrita = 0; // indica se está a ser processada uma linha ou não
-    PONTO ponto;
+    PONTO ponto; // ponto auxiliar
     char str[13]; // string auxiliar
     char identificador[4]; // matriz que guarda o identificador
 
     // processamento dos dados
     for (i = 0; i < num_linhas; i++) {
-
-        // quando deixam de haver pontos para a linha ferroviária em questão
-        if (strncmp(dadosconfig[i], "FIM_DE_LINHA:", 13*sizeof(char)) == 0) {
+        if (strncmp(dadosconfig[i], "FIM_DE_LINHA:", 13*sizeof(char)) == 0) { // se chegar ao fim da linha não há escrita no arrat
             escrita = 0;
             j = 0;
             (*num_ferrovias)++;
         }
-
-        if (escrita == 1) {
-
-            // da matriz dadosconfig[] são retirados os valores para a variável "ponto"
+        if (escrita == 1) { // caso a variável escrita tenha valor igual a 1, os dados são inseridos nas listas
             sscanf(dadosconfig[i], "%s %d %d %s %s", ponto.identificador, &ponto.x, &ponto.y, ponto.cor, ponto.tipo);
-
-            // primeiro ponto da linha
-            if (j == 0) {
+            if (j == 0) { // caso seja o primeiro node a ser inserido
                 ferrovias[*num_ferrovias]->anterior = NULL;
                 ferrovias[*num_ferrovias]->dados = (PONTO *)malloc(sizeof(PONTO));
                 if(ferrovias[*num_ferrovias]->dados == NULL) {
                     printf("\nErro na alocação de memória");
                     return -1;
                 }
+                // inserção dos dados
                 strcpy(ferrovias[*num_ferrovias]->dados->identificador, ponto.identificador);
                 ferrovias[*num_ferrovias]->dados->x = ponto.x;
                 ferrovias[*num_ferrovias]->dados->y = ponto.y;
@@ -172,22 +168,19 @@ int processaferrovias(LINHA **ferrovias, int *num_ferrovias, int num_linhas, cha
                 ferrovias[*num_ferrovias]->proximo = NULL;
                 strcpy(ferrovias[*num_ferrovias]->identificador, identificador);
             }
-
-            // pontos da linha depois do primeiro
-            if (j > 0) {
+            if (j > 0) { // caso seja depois do primeiro node a ser inserido
                 // alocação de memória
                 ferrovias[*num_ferrovias]->proximo = (LINHA *)malloc(sizeof(LINHA));
                 if (ferrovias[*num_ferrovias]->proximo == NULL) {
                     printf("\nErro na alocação de memória");
                     return -1;
                 }
-
                 ferrovias[*num_ferrovias]->proximo->dados = (PONTO *)malloc(sizeof(PONTO));
                 if (ferrovias[*num_ferrovias]->proximo->dados == NULL) {
                     printf("\nErro na alocação de memória");
                     return -1;
                 }
-
+                // inserção dos dados
                 strcpy(ferrovias[*num_ferrovias]->proximo->dados->identificador, ponto.identificador);
                 ferrovias[*num_ferrovias]->proximo->dados->x = ponto.x;
                 ferrovias[*num_ferrovias]->proximo->dados->y = ponto.y;
@@ -199,10 +192,8 @@ int processaferrovias(LINHA **ferrovias, int *num_ferrovias, int num_linhas, cha
                 ferrovias[*num_ferrovias] = ferrovias[*num_ferrovias]->proximo;
             }
             j++;
-        }   
-
-        // se houverem mais linhas ferroviárias para processar
-        if ((strncmp(dadosconfig[i], "LINHA:", 6*sizeof(char))) == 0) { // início dos dados
+        }
+        if ((strncmp(dadosconfig[i], "LINHA:", 6*sizeof(char))) == 0) { // caso cheguemos ao princípo de uma linha a variável escrita é igualada e esta inicia
             sscanf(dadosconfig[i], "%s %s", str, identificador);
             escrita = 1;
         }
@@ -212,34 +203,472 @@ int processaferrovias(LINHA **ferrovias, int *num_ferrovias, int num_linhas, cha
 }
 
 /*
-** rewindlista: Rebobina a lista até ao head
-*/
-void rewindlista(LINHA *lista) {
+** recebe o config e liga as ferrovias (não está feito)
 
-    while (lista->anterior != NULL) {
+void processaligar(LINHA **ferrovias, int *num_ferrovias, int num_linhas, char **dadosconfig) {
+
+    // declaração das variáveis
+    char linha_saida[4], ponto_saida[4], linha_entrada[4], ponto_entrada[4]; // strings que guardam os locais de saída e entrada
+    int i; // contador
+
+    // processamento das linhas
+    for (i = 0; i < num_linhas; i++) {
+
+    }
+
+    return;
+}
+
+*/
+
+/*
+** imprime uma lista do head até ao tail
+*/
+void printlista(LINHA *lista) {
+
+    while (lista->anterior != NULL) { // "rebobinamento" da lista
         lista = lista->anterior;
+    }
+
+    // impressão da lista
+    printf("\nIDENTIFICADOR\tX\tY\tCOR\tTIPO\n");
+
+    /*
+    ** NOTA: existem dois printfs diferentes puramente por questões estéticas relacionadas
+    ** com a forma como \t funciona
+    */
+    while(lista->proximo != NULL) { // impressão até ao penúltimo node
+        if ((strcmp(lista->dados->cor, "VERMELHO")) == 0 || 
+            (strcmp(lista->dados->cor, "CASTANHO")) == 0 || 
+            (strcmp(lista->dados->cor, "CINZENTO")) == 0) {
+            
+                printf("\n%s\t\t%d\t%d\t%s%s", lista->dados->identificador, 
+                                               lista->dados->x, 
+                                               lista->dados->y, 
+                                               lista->dados->cor, 
+                                               lista->dados->tipo);
+                
+                lista = lista->proximo; 
+        }
+        else {
+                printf("\n%s\t\t%d\t%d\t%s\t%s",lista->dados->identificador, 
+                                                lista->dados->x, 
+                                                lista->dados->y, 
+                                                lista->dados->cor, 
+                                                lista->dados->tipo);
+
+                lista = lista->proximo;
+        }
+    }
+
+    // impressão do último node
+    if ((strcmp(lista->dados->cor, "VERMELHO")) == 0 || 
+        (strcmp(lista->dados->cor, "CASTANHO")) == 0 || 
+        (strcmp(lista->dados->cor, "CINZENTO")) == 0) {
+            
+            printf("\n%s\t\t%d\t%d\t%s%s\n", lista->dados->identificador, 
+                                             lista->dados->x, 
+                                             lista->dados->y, 
+                                             lista->dados->cor, 
+                                             lista->dados->tipo);
+            
+            lista = lista->proximo;
+    }
+    else {
+            printf("\n%s\t\t%d\t%d\t%s\t%s\n", lista->dados->identificador, 
+                                               lista->dados->x, 
+                                               lista->dados->y, 
+                                               lista->dados->cor, 
+                                               lista->dados->tipo);
+            
+            lista = lista->proximo;
     }
 
     return;
 }
 
 /*
-** printlista: Imprime uma lista
+** menu1: Pede ao utilizador o identificador da ferrovia que deve ser impressa
 */
-void printlista(LINHA *lista) {
+int menu1(LINHA **lista, int num_ferrovias) {
 
-    while(lista->proximo != NULL) {
-        printf("\n%s %d %d %s %s", lista->dados->identificador, 
-                                   lista->dados->x, 
-                                   lista->dados->y, 
-                                   lista->dados->cor, 
-                                   lista->dados->tipo);
+    // declaração de variáveis
+    int k = 0; // verificador do return do scanf
+    char *id; // guarda o identificador que o utilizador escreve
+    int i; // contador
+    int verificador = 0; // diz se existe uma lista com um identificador correspondente
+
+    // alocação de memória
+    id = (char *)calloc(LINEMAX, sizeof(char));
+    if (id == NULL) {
+        printf("\nErro de alocação de memória");
+        return -1;
     }
+
+    // menu
+    printf("\nInsira o identificador da ferrovia: ");
+    k = scanf("%s", id);
+    while (k != 1 || (strlen(id)) > 4) {
+        flushinput();
+        printf("\nIdentificador inválido. Insira um identificador com 4 caractéres no máximo: ");
+        k = scanf("%s", id);
+    }
+    flushinput();
+
+    // procura a ferrovia
+    for (i = 0; i < num_ferrovias; i++) {
+        if ((strcmp(id, lista[i]->identificador)) == 0) {
+            verificador = 1;
+            printlista(lista[i]);
+        }
+    }
+
+    // libertação de memória
+    free(id);
+
+    // verifica se a ferrovia foi encontrada
+    if (verificador == 0) {
+        printf("\nNão foi possível encontrar a ferrovia\n");
+    }
+
+    return 0;
+}
+
+/*
+** menu2: Elimina uma das ferrovias (não funciona, dá segmentation fault)
+
+int menu2(LINHA **lista, int *num_ferrovias) {
+
+    // declaração de variáveis
+    int k; // verificador do return do scanf
+    int i, j; // contadores
+    char *id; // string que guarda o identificador que o utilizador escreve
+    LINHA *aux; // lista auxiliar
+
+    // alocação de memória
+    id = (char *)calloc(LINEMAX, sizeof(char));
+    if (id == NULL) {
+        printf("\nErro ao alocar memória");
+        return -1;
+    }
+
+    // apresentação menu
+    printf("\nInsira o identificador da ferrovia que deseja eliminar: ");
+    k = scanf("%s", id);
+    while(k != 1 || (strlen(id)) > 4) {
+        flushinput();
+        printf("\nIdentificador inválido. Insira novamente: ");
+        k = scanf("%s", id);
+    }
+
+   
+        //procura o identificador correspondente na lista e tenta mexer todos
+        //os elementos à direita do que queremos eliminar uma coluna para a esquerda
+        //eliminando depois o último elemento do array de listas
+        //e decrementando a variável que indica o número de ferrovias
+   
+    for (i = 0; i < *num_ferrovias; i++) {
+        if (strcmp(lista[i]->identificador, id) == 0) {
+            for (j = i; j < *num_ferrovias - 1; j++) {
+                lista[j]->dados = lista[j+1]->dados;
+                strcpy(lista[j]->identificador, lista[j+1]->identificador);
+                lista[j]->proximo = lista[j+1]->proximo;
+                lista[j]->anterior = lista[j+1]->anterior;
+            }
+            while (lista[*num_ferrovias] != NULL) {
+                aux = lista[*num_ferrovias];
+                lista[*num_ferrovias] = lista[*num_ferrovias]->anterior;
+                free(aux->dados);
+                free(aux);
+            }
+            *(num_ferrovias)--;
+
+        }
+    }
+
+    // libertação de memória
+    free(id);
+
+    return 0;
+}
+
+*/
+
+/*
+** menu3: Apresenta o menu da 3ª opção e mostra a informação de um dos comboios
+*/
+int menu3(COMBOIO **comboios, int num_comboios) {
+
+    // declaração das variáveis
+    int k; // verificador do return do scanf
+    int i; // contador
+    char *id; // string que guarda o identificador que o utilizador escreve
+    int encontrado = 0; // diz se o identificador corresponde a algum dos existentes
+
+    // alocação de memória
+    id = (char *)calloc(LINEMAX, sizeof(char));
+    if (id == NULL) {
+        printf("\nErro de alocação de memória");
+        return -1;
+    }
+
+    // apresentação do menu
+    printf("\nInsira o identificador do comboio que pretende apresentar: ");
+    k =scanf("%s", id);
+    if (k != 1 || strlen(id) > 2) {
+        flushinput();
+        printf("\nInsira um identificador com dois caractéres no máximo: ");
+        k = scanf("%s", id);
+    }
+    flushinput();
+
+    // procura do comboio
+    for (i = 0; i < num_comboios; i++) {
+        if (strcmp(comboios[i]->identificador, id) == 0) {
+            encontrado = 1; // indica que é verdadeira a correspondência
+
+            // impressão dos dados do comboio
+            printf("\nIDENTIFICADOR\tRAIO\tCOR\tFERROVIA INÍCIO\tVIAGENS");
+            if (strcmp(comboios[i]->cor, "VERMELHO") == 0 || strcmp(comboios[i]->cor, "CASTANHO") == 0 || strcmp(comboios[i]->cor, "CINZENTO") == 0) {
+                printf("\n%s\t\t%d\t%s %s\t %s\t%d\n", comboios[i]->identificador, 
+                                                       comboios[i]->raio, 
+                                                       comboios[i]->cor, 
+                                                       comboios[i]->nome_ferrovia, 
+                                                       comboios[i]->nome_ponto, 
+                                                       comboios[i]->viagens);
+            }
+            else{
+                printf("\n%s\t\t%d\t%s\t%s\t %s\t%d\n", comboios[i]->identificador, 
+                                                        comboios[i]->raio, 
+                                                        comboios[i]->cor, 
+                                                        comboios[i]->nome_ferrovia, 
+                                                        comboios[i]->nome_ponto, 
+                                                        comboios[i]->viagens);
+            }
+        }
+    }
+
+    // libertação de memória
+    free(id);
+
+    // verificação da existência do identificador
+    if (encontrado == 0) {
+        printf("\nNão foi possível encontrar um comboio com este identificador\n");
+    }
+
+    return 0;
+}
+
+/*
+** menu4: Elimina um dos comboios
+*/
+int menu4(COMBOIO **comboios, int *num_comboios) {
+
+    // declaração de variáveis
+    char *str; // string auxiliar
+    int i, j; // contadores
+    int k; // verificador do return do scanf
+    int encontrado = 0; // diz se o identificador foi encontrado
+
+    // alocação de memória
+    str = (char *)calloc(LINEMAX, sizeof(char));
+    if (str == NULL) {
+        printf("\nErro na alocação de memória");
+        return -1;
+    }
+
+    // apresentação do menu
+    printf("\nInsira o identificador do comboio que deseja eliminar: ");
+    k = scanf("%s", str);
+    if (k != 1 || strlen(str) > 2) {
+        flushinput();
+        printf("\nInsira um identificador com dois caractéres no máximo: ");
+        k = scanf("%s", str);
+    }
+    flushinput();
+
+    // procura do comboio a eliminar
+    for (i = 0; i < (*num_comboios); i++) {
+        if (strcmp(comboios[i]->identificador, str) == 0) {
+            encontrado = 1; // indica a correspondência do identificador
+            for (j = i; j < (*num_comboios) - 1; j++) {
+                /*
+                ** os comboios à direita do que se pretende eliminar no array
+                ** são movidos uma posição para a esquerda, sendo depois
+                ** eliminado o comboio que está na última posição
+                ** e sendo decrementada a variável que indica o número
+                ** de comboios existentes
+                */
+                strcpy(comboios[j]->identificador, comboios[j + 1]->identificador);
+                comboios[j]->raio = comboios[j + 1]->raio;
+                strcpy(comboios[j]->nome_ferrovia, comboios[j + 1]->nome_ferrovia);
+                strcpy(comboios[j]->nome_ponto, comboios[j + 1]->nome_ponto);
+                comboios[j]->viagens = comboios[j + 1]->viagens;
+            }
+            free(comboios[(*num_comboios) - 1]);
+            (*num_comboios)--;
+            break;
+        }
+    }
+
+    // libertação de memória
+    free(str);
+
+    // verificação da coreespondência do identificador
+    if (encontrado == 0) {
+        printf("\nNão foi possível encontrar um comboio com este identificador\n");
+    }
+
+    return 0;
+}
+
+/*
+** menu5: Deixa o utilizador criar um comboio
+*/
+int menu5(COMBOIO **comboios, int *num_comboios) {
+
+    // declaração de variáveis
+    int i = 0; // contador
+    int k = 0; // verificador do return do scanf
+    char *str; // string auxiliar
+
+    // alocação de memória
+    str = (char *)calloc(LINEMAX, sizeof(char));
+    if (str == NULL) {
+        printf("\nErro na alocação de memória");
+        return -1;
+    }
+
+    comboios[*num_comboios] = (COMBOIO *)malloc(sizeof(COMBOIO));
+    if (comboios[*num_comboios] == NULL) {
+        printf("\nErro na alocação da memória");
+        return -1;
+    }
+
+    // menu
+    menu5_id(str, k, i, comboios, num_comboios);
+    menu5_raio(comboios, k, num_comboios);
+    menu5_cor(comboios, k, num_comboios, str);
+    menu5_idfer(comboios, k, num_comboios, str);
+    menu5_idponto(comboios, k, num_comboios, str);
+    menu5_viagens(comboios, k, num_comboios);
+
+    // incrementação do número de comboios
+    (*num_comboios)++;
+
+    // libertação de memória
+    free(str);
+
+    return 0;
+}
+
+/*
+** menu5_id: Cria o identificador do comboio da opção 5
+*/
+void menu5_id(char *str, int k, int i, COMBOIO **comboios, int *num_comboios) {
+
+    printf("\nInsira o identificador do novo comboio: ");
+    k = scanf("%s", str);
+    for (i = 0; i < *num_comboios; i++) {
+        while (k != 1 || strlen(str) > 2 || strcmp(str, comboios[i]->identificador) == 0) {
+            flushinput();
+            printf("\nIdentificador inválido. Insira novamente: ");
+            k = scanf("%s", str);
+        }
+    }
+    strcpy(comboios[*num_comboios]->identificador, str);
+    flushinput();
 
     return;
 }
 
+/*
+** menu5_raio: Cria o raio do comboio da opção 5
+*/
+void menu5_raio(COMBOIO **comboios, int k, int *num_comboios) {
 
+    printf("\nInsira o raio de cada bola: ");
+    k = scanf("%d", &comboios[*num_comboios]->raio);
+    while (k != 1 || comboios[*num_comboios]->raio <= 0) {
+        flushinput();
+        printf("\nInsira um inteiro: ");
+        k = scanf("%d", &comboios[*num_comboios]->raio);
+    }
+    flushinput();
+
+    return;
+}
+
+/*
+** menu5_cor: Cria a cor do comboio da opção 5
+*/
+void menu5_cor(COMBOIO **comboios, int k, int *num_comboios, char *str) {
+
+    printf("\nInsira a cor do novo comboio: ");
+    k = scanf("%s", str);
+    while (k != 1 || strlen(str) > 20 || (strcmp(str, "VERMELHO") != 0 && strcmp(str, "AZUL") != 0 && strcmp(str, "AMARELO") != 0 && strcmp(str, "VERDE") != 0 && strcmp(str, "CINZENTO") != 0 && strcmp(str, "CASTANHO") != 0 && strcmp(str, "PRETO") != 0 && strcmp(str, "CYAN") != 0 && strcmp(str, "ROXO") != 0 && strcmp(str, "BRANCO") != 0) ) {
+        flushinput();
+        printf("\nCor inválida. Insira novamente: ");
+        k = scanf("%s", str);
+    }
+    strcpy(comboios[*num_comboios]->cor, str);
+    flushinput();
+
+    return;
+}
+
+/*
+** menu5_idfer: Cria o identificador da ferrovia do comboio da opção 5
+*/
+void menu5_idfer(COMBOIO **comboios, int k, int *num_comboios, char *str) {
+
+    printf("\nInsira o identificador da ferrovia onde circula o novo comboio: ");
+    k = scanf("%s", str);
+    while (k != 1 || strlen(str) > 4) {
+        flushinput();
+        printf("\nIdentificador inválido. Insira um identificador de ferrovia com 4 caractéres no máximo: ");
+        k = scanf("%s", str);
+    }
+    strcpy(comboios[*num_comboios]->nome_ferrovia, str);
+    flushinput();
+
+    return;
+}
+
+/*
+** menu5_idponto: Cria o identificador do ponto do comboio da opção 5
+*/
+void menu5_idponto(COMBOIO **comboios, int k, int *num_comboios, char *str) {
+
+    printf("\nInsira o identificador do ponto onde inicia a circulação do novo comboio: ");
+    k = scanf("%s", str);
+    while (k != 1 || strlen(str) > 4) {
+        flushinput();
+        printf("\nIdentificador inválido. Insira um identificador de ponto com 4 caractéres no máximo: ");
+        k = scanf("%s", str);
+    }
+    strcpy(comboios[*num_comboios]->nome_ponto, str);
+    flushinput();
+
+    return;
+}
+
+/*
+** menu5_viagens: Cria as viagens do comboio da opção 5
+*/
+void menu5_viagens(COMBOIO **comboios, int k, int *num_comboios) {
+
+    printf("\nInsira o número de viagens: ");
+    k = scanf("%d", &comboios[*num_comboios]->viagens);
+    while (k != 1 || comboios[*num_comboios]->viagens <= 0) {
+        flushinput();
+        printf("\nInsira um inteiro positivo: ");
+        k = scanf("%d", &comboios[*num_comboios]->viagens);
+    }
+    flushinput();
+
+    return;
+}
 
 /* -------------------------------------------- Parte Gráfica -------------------------------------------- */
 
@@ -334,18 +763,52 @@ void InitFont()
 ** renderRailroad: Apresenta na janela gráfica a ferrovia (pontos e troços)
 */
 void renderRailroad (SDL_Renderer * g_pRenderer, LINHA *lista, int num_ferrovias){
+    
+    LINHA *ultimo = NULL; // para no fim fechar a ferrovia formando um polígono
+    COR cor;
+    while (lista->anterior != NULL) { // "rebobinamento" da lista para termos o 1º valor
+        lista = lista->anterior;
+    }
 
-     while(lista->proximo != NULL) {
+    while(lista->proximo != NULL) {
         // Cor usada será branca (troços ferroviários serão desta cor)
-        SDL_SetRenderDrawColor(g_pRenderer, 255, 255, 255, 255); 
+        cor = stringRGB(*lista->dados);
 
+        SDL_SetRenderDrawColor(g_pRenderer, 190, 190, 190, 255);
         SDL_RenderDrawLine(g_pRenderer, 
                            lista->dados->x, 
                            lista->dados->y,
                            lista->proximo->dados->x, 
                            lista->proximo->dados->y);
-        lista = lista->proximo;        
+        if(strcmp(lista->dados->tipo, "VIA") == 0){
+           filledCircleRGB(g_pRenderer, lista->dados->x, lista->dados->y, 3, 190, 190, 190); 
+        }
+        
+        else if(strcmp(lista->dados->tipo, "EST") == 0){
+           filledCircleRGB(g_pRenderer, lista->dados->x, lista->dados->y, 8, cor.r, cor.g, cor.b); 
+        }
+
+        lista = lista->proximo;
+        ultimo = lista;        
     }
+
+    while (lista->anterior != NULL) { // "rebobinamento" da lista para ligar o 1º ponto ao último
+        lista = lista->anterior;
+    }
+
+    // fecha a ferrovia e desenha o último ponto
+    SDL_SetRenderDrawColor(g_pRenderer, 190, 190, 190, 255);
+    SDL_RenderDrawLine(g_pRenderer, lista->dados->x, lista->dados->y,ultimo->dados->x, ultimo->dados->y);
+    
+    cor = stringRGB(*ultimo->dados);
+    if(strcmp(ultimo->dados->tipo, "VIA") == 0){
+           filledCircleRGB(g_pRenderer, ultimo->dados->x, ultimo->dados->y, 3, 190, 190, 190); 
+        }
+        
+    else if(strcmp(ultimo->dados->tipo, "EST") == 0){
+       filledCircleRGB(g_pRenderer, ultimo->dados->x, ultimo->dados->y, 8, cor.r, cor.g, cor.b); 
+    }
+
 
     return;
 }
@@ -389,52 +852,53 @@ COR stringRGB (PONTO temporario){
     char valor_alterado[LINEMAX];
     COR rgb_value;
     strcpy(valor_alterado, temporario.cor);
+
     if(strcmp (valor_alterado, "VERMELHO") == 0){
         rgb_value.r = 255;
         rgb_value.g = 0;
         rgb_value.b = 0;
     }
-    if(strcmp (valor_alterado, "ROXO") == 0){
+    else if(strcmp (valor_alterado, "ROXO") == 0){
         rgb_value.r = 102;
         rgb_value.g = 0;
         rgb_value.b = 102;
     }
-    if(strcmp (valor_alterado, "AZUL") == 0){
+    else if(strcmp (valor_alterado, "AZUL") == 0){
         rgb_value.r = 0;
         rgb_value.g = 0;
         rgb_value.b = 255;
     }
-    if(strcmp (valor_alterado, "CYAN") == 0){
+    else if(strcmp (valor_alterado, "CYAN") == 0){
         rgb_value.r = 0;
         rgb_value.g = 255;
         rgb_value.b = 255;
     }
-    if(strcmp (valor_alterado, "VERDE") == 0){
+    else if(strcmp (valor_alterado, "VERDE") == 0){
         rgb_value.r = 0;
         rgb_value.g = 255;
         rgb_value.b = 0;
     }
-    if(strcmp (valor_alterado, "AMARELO") == 0){
+    else if(strcmp (valor_alterado, "AMARELO") == 0){
         rgb_value.r = 255;
         rgb_value.g = 255;
         rgb_value.b = 0;
     }
-    if(strcmp (valor_alterado, "CASTANHO") == 0){
+    else if(strcmp (valor_alterado, "CASTANHO") == 0){
         rgb_value.r = 102;
         rgb_value.g = 51;
         rgb_value.b = 0;
     }
-    if(strcmp (valor_alterado, "PRETO") == 0){
+    else if(strcmp (valor_alterado, "PRETO") == 0){
         rgb_value.r = 0;
         rgb_value.g = 0;
         rgb_value.b = 0;
     }
-    if(strcmp (valor_alterado, "BRANCO") == 0){
+    else if(strcmp (valor_alterado, "BRANCO") == 0){
         rgb_value.r = 255;
         rgb_value.g = 255;
         rgb_value.b = 255;
     }
-    if(strcmp (valor_alterado, "CINZENTO") == 0){
+    else if(strcmp (valor_alterado, "CINZENTO") == 0){
         rgb_value.r = 192;
         rgb_value.g = 192;
         rgb_value.b = 192;
