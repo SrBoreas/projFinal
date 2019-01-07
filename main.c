@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <time.h>
 #include <SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <math.h>
@@ -32,6 +33,7 @@ int main(int argc, char *argv[])
     SDL_Event event;
     int delay = 150;
     int quit = 0;
+    COORDENADAS coords;
 
     // alocação de memória para os comboios
     comboios = (COMBOIO **)calloc(CMAX, sizeof(COMBOIO *));
@@ -301,9 +303,15 @@ int main(int argc, char *argv[])
                         }
                     }  
                     // render da ferrovia
-                    renderRailroad(g_pRenderer, *ferrovias, num_ferrovias);
+                    renderRailroad(g_pRenderer, *ferrovias, num_ferrovias, serif);
                     // render do menu interativo
                     renderMenu (g_pRenderer, janela.dimx, janela.dimy, serif);
+                    // render dos comboios
+                    for(i = 0; i < num_comboios; i++){
+                        printf("%d", num_comboios);
+                        coords = trainCoords(*ferrovias, comboios[i], num_ferrovias);
+                        renderTrains(g_pRenderer, comboios[i], serif, coords);
+                    }
                     // aparece no ecrã todas as alterações feitas previamente
                     SDL_RenderPresent(g_pRenderer);
                     // adiciona-se um delay (responsável pela velocidade dos comboios)

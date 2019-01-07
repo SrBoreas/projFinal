@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <time.h>
 #include <SDL2/SDL_ttf.h> 
 #include <math.h>
 #include <SDL.h>
@@ -145,7 +146,7 @@ int processaferrovias(LINHA **ferrovias, int *num_ferrovias, int num_linhas, cha
 
     // processamento dos dados
     for (i = 0; i < num_linhas; i++) {
-        if (strncmp(dadosconfig[i], "FIM_DE_LINHA:", 13*sizeof(char)) == 0) { // se chegar ao fim da linha não há escrita no arrat
+        if (strncmp(dadosconfig[i], "FIM_DE_LINHA:", 13*sizeof(char)) == 0) { // se chegar ao fim da linha não há escrita no array
             escrita = 0;
             j = 0;
             (*num_ferrovias)++;
@@ -706,7 +707,7 @@ void InitEverything(int width, int height, TTF_Font **_font, SDL_Window** _windo
     *g_pRenderer = CreateRenderer(width, height, *_window);
 
     // dá load à fonte e define o tamanho de letra
-    *_font = TTF_OpenFont("FreeSerif.ttf", 40);
+    *_font = TTF_OpenFont("FreeSerif.ttf", 22);
     if(!*_font)
     {
         printf("TTF_OpenFont: %s\n", TTF_GetError());
@@ -775,10 +776,13 @@ void InitFont()
 /*
 ** renderRailroad: Apresenta na janela gráfica a ferrovia (pontos e troços)
 */
-void renderRailroad (SDL_Renderer * g_pRenderer, LINHA *lista, int num_ferrovias){
+void renderRailroad (SDL_Renderer * g_pRenderer, LINHA *lista, int num_ferrovias, TTF_Font *_font)
+{
     
     LINHA *ultimo = NULL; // para no fim fechar a ferrovia formando um polígono
+    SDL_Color black = { 0, 0, 0 };
     COR cor;
+    COORDENADAS local;
 
     // o renderer fica da cor branca
     SDL_SetRenderDrawColor( g_pRenderer, 255, 255, 255, 255 );
@@ -792,7 +796,7 @@ void renderRailroad (SDL_Renderer * g_pRenderer, LINHA *lista, int num_ferrovias
 
     while(lista->proximo != NULL) {
         // Cor usada será branca (troços ferroviários serão desta cor)
-        cor = stringRGB(*lista->dados);
+        cor = stringRGB(lista->dados->cor);
 
         SDL_SetRenderDrawColor(g_pRenderer, 0, 0, 0, 255);
         // desenha os troços da ferrovia
@@ -806,7 +810,10 @@ void renderRailroad (SDL_Renderer * g_pRenderer, LINHA *lista, int num_ferrovias
            filledCircleRGB(g_pRenderer, lista->dados->x, lista->dados->y, 6, 190, 190, 190); 
         }  
         else if(strcmp(lista->dados->tipo, "EST") == 0){
-           filledCircleRGB(g_pRenderer, lista->dados->x, lista->dados->y, 20, cor.r, cor.g, cor.b); 
+           filledCircleRGB(g_pRenderer, lista->dados->x, lista->dados->y, 20, cor.r, cor.g, cor.b);
+           local.x = lista->dados->x-16;
+           local.y = lista->dados->y-18; 
+           RenderText(local, lista->dados->identificador, _font, &black, g_pRenderer); 
         }
         else printf("Ponto do tipo errado.\n");
 
@@ -823,38 +830,49 @@ void renderRailroad (SDL_Renderer * g_pRenderer, LINHA *lista, int num_ferrovias
     SDL_RenderDrawLine(g_pRenderer, lista->dados->x, lista->dados->y,ultimo->dados->x, ultimo->dados->y);
 
     // desenha o primeiro ponto de novo (para ficar por cima do troço)
-    cor = stringRGB(*lista->dados);
+    cor = stringRGB(lista->dados->cor);
     if(strcmp(lista->dados->tipo, "VIA") == 0){
-       filledCircleRGB(g_pRenderer, lista->dados->x, lista->dados->y, 6, 190, 190, 190); 
+        filledCircleRGB(g_pRenderer, lista->dados->x, lista->dados->y, 6, 190, 190, 190); 
     }  
     else if(strcmp(lista->dados->tipo, "EST") == 0){
-       filledCircleRGB(g_pRenderer, lista->dados->x, lista->dados->y, 20, cor.r, cor.g, cor.b); 
+        filledCircleRGB(g_pRenderer, lista->dados->x, lista->dados->y, 20, cor.r, cor.g, cor.b);
+        local.x = lista->dados->x-16;
+        local.y = lista->dados->y-18;
+        RenderText(local, lista->dados->identificador, _font, &black, g_pRenderer);  
     }
     
     // desenha o último ponto
-    cor = stringRGB(*ultimo->dados);
+    cor = stringRGB(ultimo->dados->cor);
     if(strcmp(ultimo->dados->tipo, "VIA") == 0){
-           filledCircleRGB(g_pRenderer, ultimo->dados->x, ultimo->dados->y, 6, 190, 190, 190); 
+        filledCircleRGB(g_pRenderer, ultimo->dados->x, ultimo->dados->y, 6, 190, 190, 190); 
     }        
     else if(strcmp(ultimo->dados->tipo, "EST") == 0){
-       filledCircleRGB(g_pRenderer, ultimo->dados->x, ultimo->dados->y, 20, cor.r, cor.g, cor.b); 
+        filledCircleRGB(g_pRenderer, ultimo->dados->x, ultimo->dados->y, 20, cor.r, cor.g, cor.b);
+        local.x = ultimo->dados->x-16;
+        local.y = ultimo->dados->y-18;
+        RenderText(local, ultimo->dados->identificador, _font, &black, g_pRenderer);  
     }
     else printf("Ponto do tipo errado.\n");
 
     return;
 }
 
-void renderMenu (SDL_Renderer *g_pRenderer, int width, int height, TTF_Font *_font){
-
-    
+/*
+** renderMenu: Apresenta na janela gráfica um menu com opções para a simulação
+*/
+void renderMenu (SDL_Renderer *g_pRenderer, int width, int height, TTF_Font *_font)
+{
+    //declaração das variáveis
     SDL_Rect R1, R2, R3;
     SDL_Color black = { 0, 0, 0 };
+    COORDENADAS local;
+
     R1.x = R2.x = R3.x = width - 220;
     R1.y = 20;
-    R2.y = R1.y + 70;
-    R3.y = R2.y + 70;
+    R2.y = R1.y + 50;
+    R3.y = R2.y + 50;
     R1.w = R2.w = R3.w = 200;
-    R1.h = R2.h = R3.h = 60;
+    R1.h = R2.h = R3.h = 40;
 
     SDL_SetRenderDrawColor(g_pRenderer, 255, 255, 153, 255);
     SDL_RenderFillRect(g_pRenderer, &R1);
@@ -866,8 +884,45 @@ void renderMenu (SDL_Renderer *g_pRenderer, int width, int height, TTF_Font *_fo
     SDL_RenderDrawRect(g_pRenderer, &R2);
     SDL_RenderDrawRect(g_pRenderer, &R3);
 
-    RenderText(R1.x + 25, R1.y, "Continue", _font, &black, g_pRenderer);
+    local.x = R1.x + 60;
+    local.y = R1.y;
+    RenderText(local, "Continue", _font, &black, g_pRenderer);
+    local.x = R1.x + 65;
+    local.y = R2.y;
+    RenderText(local, "Suspend", _font, &black, g_pRenderer);
+    local.x = R1.x + 80;
+    local.y = R3.y;
+    RenderText(local, "Stop", _font, &black, g_pRenderer);
 }
+
+/*
+** trainCoords
+*/
+COORDENADAS trainCoords (LINHA *lista, COMBOIO *comboios, int num_ferrovias)
+{
+    // declaração das variáveis
+    COORDENADAS coords;
+
+    coords = getCoords(lista, num_ferrovias, comboios->nome_ferrovia, comboios->nome_ponto);
+
+    return coords;
+}
+
+/*
+** renderTrains: apresenta na janela gráfica os comboios a andar
+*/
+void renderTrains (SDL_Renderer * g_pRenderer, COMBOIO *comboios, TTF_Font *_font, COORDENADAS _coords)
+{
+    // declaração de variáveis
+    COR cor;
+
+    cor = stringRGB(comboios->cor);
+    printf("%d %d\n", _coords.x, _coords.y);
+    filledCircleRGB(g_pRenderer, _coords.x, _coords.y, comboios->raio, cor.r, cor.g, cor.b);
+
+    return;
+}
+
 /*
 ** filledCircleRGB: Desenha um círculo preenchido na janela gráfica
 ** \param _cicleX posição x em px do círculo
@@ -877,6 +932,7 @@ void renderMenu (SDL_Renderer *g_pRenderer, int width, int height, TTF_Font *_fo
 */
 void filledCircleRGB(SDL_Renderer * g_pRenderer, int _circleX, int _circleY, int _circleR, int _r, int _g, int _b)
 {
+    // declaração das variáveis
     int off_x = 0;
     int off_y = 0;
     float degree = 0.0;
@@ -884,6 +940,7 @@ void filledCircleRGB(SDL_Renderer * g_pRenderer, int _circleX, int _circleY, int
     
     SDL_SetRenderDrawColor(g_pRenderer, _r, _g, _b, 255);
     
+    // desenha pontos até chegar ao centro do círculo (cruzes cada vez mais pequenas)
     while (_circleR > 0)
     {
         for (degree = 0.0; degree < M_PI/2; degree+=step)
@@ -903,57 +960,57 @@ void filledCircleRGB(SDL_Renderer * g_pRenderer, int _circleX, int _circleY, int
 /*
 ** stringRGB: Dado um dado do tipo PONTO retorna um valor RGB 
 */
-COR stringRGB (PONTO temporario){
-    char valor_alterado[LINEMAX];
+COR stringRGB (char corstr[LINEMAX])
+{
+    // declaração de variáveis
     COR rgb_value;
-    strcpy(valor_alterado, temporario.cor);
 
-    if(strcmp (valor_alterado, "VERMELHO") == 0){
+    if(strcmp (corstr, "VERMELHO") == 0){
         rgb_value.r = 255;
         rgb_value.g = 0;
         rgb_value.b = 0;
     }
-    else if(strcmp (valor_alterado, "ROXO") == 0){
+    else if(strcmp (corstr, "ROXO") == 0){
         rgb_value.r = 102;
         rgb_value.g = 0;
         rgb_value.b = 102;
     }
-    else if(strcmp (valor_alterado, "AZUL") == 0){
+    else if(strcmp (corstr, "AZUL") == 0){
         rgb_value.r = 0;
         rgb_value.g = 0;
         rgb_value.b = 255;
     }
-    else if(strcmp (valor_alterado, "CYAN") == 0){
+    else if(strcmp (corstr, "CYAN") == 0){
         rgb_value.r = 0;
         rgb_value.g = 255;
         rgb_value.b = 255;
     }
-    else if(strcmp (valor_alterado, "VERDE") == 0){
+    else if(strcmp (corstr, "VERDE") == 0){
         rgb_value.r = 0;
         rgb_value.g = 255;
         rgb_value.b = 0;
     }
-    else if(strcmp (valor_alterado, "AMARELO") == 0){
+    else if(strcmp (corstr, "AMARELO") == 0){
         rgb_value.r = 255;
         rgb_value.g = 255;
         rgb_value.b = 0;
     }
-    else if(strcmp (valor_alterado, "CASTANHO") == 0){
+    else if(strcmp (corstr, "CASTANHO") == 0){
         rgb_value.r = 102;
         rgb_value.g = 51;
         rgb_value.b = 0;
     }
-    else if(strcmp (valor_alterado, "PRETO") == 0){
+    else if(strcmp (corstr, "PRETO") == 0){
         rgb_value.r = 0;
         rgb_value.g = 0;
         rgb_value.b = 0;
     }
-    else if(strcmp (valor_alterado, "BRANCO") == 0){
+    else if(strcmp (corstr, "BRANCO") == 0){
         rgb_value.r = 255;
         rgb_value.g = 255;
         rgb_value.b = 255;
     }
-    else if(strcmp (valor_alterado, "CINZENTO") == 0){
+    else if(strcmp (corstr, "CINZENTO") == 0){
         rgb_value.r = 192;
         rgb_value.g = 192;
         rgb_value.b = 192;
@@ -965,37 +1022,75 @@ COR stringRGB (PONTO temporario){
 }
 
 /**
- * RenderText function: Renders some text on a position inside the app window
- * \param x X coordinate of the text
- * \param y Y coordinate of the text
- * \param text string with the text to be written
- * \param _font TTF font used to render the text
- * \param _color color of the text
- * \param g_pRenderer renderer to handle all rendering in a window
+ * RenderText: Dá render a texto na janela gráfica
+ **\param x e y coordenadas onde vai aparecer o texto
+ **\param string com o texto que se pretende apresentar na janela
+ **\param _font TTF fonte usada
+ **\param _color cor do texto
  */
-void RenderText(int x, int y, const char *text, TTF_Font *_font, SDL_Color *_color, SDL_Renderer* g_pRenderer)
+void RenderText(COORDENADAS local, const char *text, TTF_Font *_font, SDL_Color *_color, SDL_Renderer* g_pRenderer)
 {
+    //declaração de variáveis
     SDL_Surface *text_surface;
     SDL_Texture *text_texture;
     SDL_Rect solidRect;
 
-    solidRect.x = x;
-    solidRect.y = y;
-    // create a surface from the string text with a predefined font
+    solidRect.x = local.x;
+    solidRect.y = local.y;
+
+    // cria a superfície a partir da string com a fonte certa
     text_surface = TTF_RenderText_Blended(_font,text,*_color);
     if(!text_surface)
     {
         printf("TTF_RenderText_Blended: %s\n", TTF_GetError());
         exit(EXIT_FAILURE);
     }
-    // create texture
+    // cria a textura
     text_texture = SDL_CreateTextureFromSurface(g_pRenderer, text_surface);
-    // obtain size
+    // obtém o tamanho
     SDL_QueryTexture( text_texture, NULL, NULL, &solidRect.w, &solidRect.h );
-    // render it !
+    // efetua o render
     SDL_RenderCopy(g_pRenderer, text_texture, NULL, &solidRect);
-    // clear memory
+    // liberta a memória
     SDL_DestroyTexture(text_texture);
     SDL_FreeSurface(text_surface);
     return;
+}
+
+/*
+** getCoords: devolve x e y para desenhar os comboios nas coordenadas certas
+** \param *lista são retirados da lista as coordenadas dos pontosc
+** \param num_ferrovias usado para verificar todas as ferrovias
+** \param _indent identificação da ferrovia onde o comboio se encontra inicialmente
+** \param _ponto identificação do ponto da ferrovia onde o comboio se encontra inicialmente
+*/
+COORDENADAS getCoords(LINHA *lista, int num_ferrovias, char _ident[LINEMAX], char _ponto[LINEMAX])
+{
+    // declaração das variáveis
+    COORDENADAS ponto; // onde estarão guardadas as coordenadas pretendidas
+    int i; // contador
+
+    while (lista->anterior != NULL) { // "rebobinamento" da lista
+        lista = lista->anterior;
+    }
+
+    // procura a ferrovia
+    for (i = 0; i < num_ferrovias; i++) {
+        if ((strcmp(lista->identificador, _ident)) == 0){
+            if ((strcmp(lista->dados->identificador, _ponto)) == 0){
+                ponto.x = lista->dados->x;
+                ponto.y = lista->dados->y;
+            }
+            else {
+                printf("%s\n", lista->dados->identificador);
+                printf("ponto mal?\n");
+            }
+        }
+        else printf("ferrovia mal?\n");
+
+        if(lista->proximo != NULL){
+            lista = lista->proximo;
+        }
+    }
+    return ponto;
 }

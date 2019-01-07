@@ -1,10 +1,10 @@
 #ifndef FUNCOES_H
 #define FUNCOES_H // Include guards
 
-#define FILEMAX 10000 // número ḿáximo de linhas lidas num ficheiro
-#define LINEMAX 100 // número máximo de caractéres lidos numa linha de um ficheiro
-#define CMAX 50 // número máximo de comboios
-#define FMAX 50 // número máximo de ferrovias
+#define FILEMAX 10000              // número ḿáximo de linhas lidas num ficheiro
+#define LINEMAX 100                // número máximo de caractéres lidos numa linha de um ficheiro
+#define CMAX 50                    // número máximo de comboios
+#define FMAX 50                    // número máximo de ferrovias
 #define M_PI 3.14159265            // valor da constante matemática "pi"
 #define WINDOW_POSX 200            // posição inicial da janela: x
 #define WINDOW_POSY 200            // posição inicial da janela: y
@@ -19,6 +19,11 @@ typedef struct{
     char cor[20];
     char tipo[3];
 }PONTO; // pontos que unidos formam as ferrovias
+
+typedef struct{
+    int x;
+    int y;
+}COORDENADAS; // estrutura para satisfazer o número máximo de argumentos por função
 
 typedef struct{
     char identificador[2];
@@ -73,14 +78,18 @@ void menu5_viagens(COMBOIO **comboios, int k, int *num_comboios); // cria as via
 /*
 ** protótipos de funções (parte gráfica)
 */
-void renderRailroad (SDL_Renderer *g_pRenderer, LINHA *lista, int num_ferrovias);
+void renderRailroad (SDL_Renderer * g_pRenderer, LINHA *lista, int num_ferrovias, TTF_Font *_font);
 void renderMenu (SDL_Renderer *g_pRenderer, int width, int height, TTF_Font *_font);
+COORDENADAS trainCoords (LINHA *lista, COMBOIO *comboios, int num_ferrovias);
+void renderTrains (SDL_Renderer * g_pRenderer, COMBOIO *comboios, TTF_Font *_font, COORDENADAS _coords);
 void InitEverything(int width, int height, TTF_Font **_font, SDL_Window** _window, SDL_Renderer** g_pRenderer);
 SDL_Window* CreateWindow(int width, int height);
 SDL_Renderer* CreateRenderer(int width, int height, SDL_Window *_window);
 void InitFont();
 void filledCircleRGB(SDL_Renderer * g_pRenderer, int _circleX, int _circleY, int _circleR, int _r, int _g, int _b);
-COR stringRGB (PONTO temporario);
-void RenderText(int x, int y, const char *text, TTF_Font *_font, SDL_Color *_color, SDL_Renderer* g_pRenderer);
+COR stringRGB (char corstr[LINEMAX]);
+void RenderText(COORDENADAS local, const char *text, TTF_Font *_font, SDL_Color *_color, SDL_Renderer* g_pRenderer);
+COORDENADAS getCoords(LINHA *lista, int num_ferrovias, char _ident[LINEMAX], char _ponta[LINEMAX]);
+
 
 #endif
