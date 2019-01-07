@@ -302,13 +302,19 @@ int main(int argc, char *argv[])
                             return 0;
                         }
                     }  
-                    // render da ferrovia
-                    renderRailroad(g_pRenderer, *ferrovias, num_ferrovias, serif);
+                    // o renderer fica da cor branca
+				    SDL_SetRenderDrawColor( g_pRenderer, 255, 255, 255, 255 );
+
+				    // limpa a janela
+				    SDL_RenderClear( g_pRenderer );
+                    // render das ferrovias
+                    renderRailroad(g_pRenderer, ferrovias[0], serif, num_ferrovias);
+                    renderRailroad(g_pRenderer, ferrovias[1], serif, num_ferrovias);
                     // render do menu interativo
                     renderMenu (g_pRenderer, janela.dimx, janela.dimy, serif);
                     // render dos comboios
                     for(i = 0; i < num_comboios; i++){
-                        coords = getCoords(*ferrovias, num_ferrovias, comboios[i]->nome_ferrovia, comboios[i]->nome_ponto);
+                        coords = getCoords(ferrovias[0], comboios[i]->nome_ferrovia, comboios[i]->nome_ponto);
                         renderTrains(g_pRenderer, *comboios[i], serif, coords);
                     }
                     // aparece no ecrã todas as alterações feitas previamente

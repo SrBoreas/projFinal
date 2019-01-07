@@ -83,17 +83,16 @@ void apagalista(LINHA *ferrovia); // apaga uma lista node a node
 /*
 ** protótipos de funções (parte gráfica)
 */
-void renderRailroad (SDL_Renderer * g_pRenderer, LINHA *lista, int num_ferrovias, TTF_Font *_font);
-void renderMenu (SDL_Renderer *g_pRenderer, int width, int height, TTF_Font *_font);
-COORDENADAS trainCoords (LINHA *lista, char nome_ferrovia[LINEMAX], char nome_ponto[LINEMAX], int num_ferrovias);
-void renderTrains (SDL_Renderer * g_pRenderer, COMBOIO comboios, TTF_Font *_font, COORDENADAS _coords);
-void InitEverything(int width, int height, TTF_Font **_font, SDL_Window** _window, SDL_Renderer** g_pRenderer);
-SDL_Window* CreateWindow(int width, int height);
-SDL_Renderer* CreateRenderer(int width, int height, SDL_Window *_window);
-void InitFont();
-void filledCircleRGB(SDL_Renderer * g_pRenderer, int _circleX, int _circleY, int _circleR, int _r, int _g, int _b);
-COR stringRGB (char corstr[LINEMAX]);
-void RenderText(COORDENADAS local, const char *text, TTF_Font *_font, SDL_Color *_color, SDL_Renderer* g_pRenderer);
-COORDENADAS getCoords(LINHA *lista, int num_ferrovias, char _ident[LINEMAX], char _ponta[LINEMAX]);
+void renderRailroad (SDL_Renderer * g_pRenderer, LINHA *lista, TTF_Font *_font, int num_ferrovias); // desenha as ferrovias
+void renderMenu (SDL_Renderer *g_pRenderer, int width, int height, TTF_Font *_font); // desenha o menu
+void renderTrains (SDL_Renderer * g_pRenderer, COMBOIO comboios, TTF_Font *_font, COORDENADAS _coords); // desenha os comboios
+void InitEverything(int width, int height, TTF_Font **_font, SDL_Window** _window, SDL_Renderer** g_pRenderer); // inicializa os gráficos
+SDL_Window* CreateWindow(int width, int height); // cria uma janela gráfica
+SDL_Renderer* CreateRenderer(int width, int height, SDL_Window *_window); // cria um renderer
+void InitFont(); // abre e inicializa a biblioteca textual
+void filledCircleRGB(SDL_Renderer * g_pRenderer, int _circleX, int _circleY, int _circleR, int _r, int _g, int _b); // desenha um círculo
+COR stringRGB (char corstr[LINEMAX]); // converte a cor de uma string para um valor RGB
+void RenderText(COORDENADAS local, const char *text, TTF_Font *_font, SDL_Color *_color, SDL_Renderer* g_pRenderer); // mostra texto na janela
+COORDENADAS getCoords(LINHA *lista, char _ident[LINEMAX], char _ponta[LINEMAX]); // obtém as coords dos pontos das ferrovias
 
 #endif

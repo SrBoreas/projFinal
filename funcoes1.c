@@ -9,7 +9,7 @@
 
 
 /*
-** função que dá flush ao stdin
+** flushinput: Função que dá flush ao stdin
 */
 void flushinput(void) {
 
@@ -21,7 +21,7 @@ void flushinput(void) {
 }
 
 /*
-** função que apresenta o menu e retorna a opcao escolhida
+** menu: Função que apresenta o menu e retorna a opcao escolhida
 */
 int menu(void) {
 
@@ -56,7 +56,7 @@ int menu(void) {
 }
 
 /*
-** função que processa os dados do ficheiro config
+** lerconfig: Função que processa os dados do ficheiro config
 */
 int lerconfig(char config[], char **dados, int *num_linhas) {
 
@@ -104,7 +104,7 @@ JANELA tamanhoJanela(JANELA _janela, int num_linhas, char **dadosconfig) {
 }
 
 /*
-** recebe o config e forma os comboios
+** processacomboio: Recebe o config e forma os comboios
 */
 void processacomboio(COMBOIO **comboios, int *num_comboios, int num_linhas, char **dadosconfig) {
 
@@ -131,7 +131,7 @@ void processacomboio(COMBOIO **comboios, int *num_comboios, int num_linhas, char
 }
 
 /*
-** recebe o config e forma as ferrovias
+** processaferrovias: Recebe o config e forma as ferrovias
 */
 int processaferrovias(LINHA **ferrovias, int *num_ferrovias, int num_linhas, char **dadosconfig) {
 
@@ -186,7 +186,7 @@ int processaferrovias(LINHA **ferrovias, int *num_ferrovias, int num_linhas, cha
 }
 
 /*
-** recebe o config e liga as ferrovias (não está feito)
+** processaligar: Recebe o config e liga as ferrovias (não está feito)
 */
 int processaligar(LINHA **ferrovias, int num_ferrovias, int num_linhas, char **dadosconfig) {
 
@@ -226,7 +226,7 @@ int processaligar(LINHA **ferrovias, int num_ferrovias, int num_linhas, char **d
 
 
 /*
-** imprime uma lista do head até ao tail
+** printlista: Imprime uma lista do head até ao tail
 */
 void printlista(LINHA *lista) {
 
@@ -295,7 +295,7 @@ void printlista(LINHA *lista) {
 }
 
 /*
-** pede ao utilizador o identificador da ferrovia que deve ser impressa
+** menu1: Pede ao utilizador o identificador da ferrovia que deve ser impressa
 */
 int menu1(LINHA **lista, int num_ferrovias) {
 
@@ -342,7 +342,7 @@ int menu1(LINHA **lista, int num_ferrovias) {
 }
 
 /*
-** apresenta o menu da 3ª opção e mostra a informação de um dos comboios
+** menu3: Apresenta o menu da 3ª opção e mostra a informação de um dos comboios
 */
 int menu3(COMBOIO **comboios, int num_comboios) {
 
@@ -409,7 +409,7 @@ int menu3(COMBOIO **comboios, int num_comboios) {
 }
 
 /*
-** elimina um dos comboios
+** menu4: Elimina um dos comboios
 */
 int menu4(COMBOIO **comboios, int *num_comboios) {
 
@@ -472,7 +472,7 @@ int menu4(COMBOIO **comboios, int *num_comboios) {
 }
 
 /*
-** deixa o utilizador criar um comboio
+** menu5: Deixa o utilizador criar um comboio
 */
 int menu5(COMBOIO **comboios, int *num_comboios) {
 
@@ -512,7 +512,7 @@ int menu5(COMBOIO **comboios, int *num_comboios) {
 }
 
 /*
-** cria o identificador do comboio da opção 5
+** menu5_id: Cria o identificador do comboio da opção 5
 */
 void menu5_id(char *str, int k, int i, COMBOIO **comboios, int *num_comboios) {
 
@@ -532,7 +532,7 @@ void menu5_id(char *str, int k, int i, COMBOIO **comboios, int *num_comboios) {
 }
 
 /*
-** cria o raio do comboio da opção 5
+** menu5_raio: cria o raio do comboio da opção 5
 */
 void menu5_raio(COMBOIO **comboios, int k, int *num_comboios) {
 
@@ -549,7 +549,7 @@ void menu5_raio(COMBOIO **comboios, int k, int *num_comboios) {
 }
 
 /*
-** cria a cor do comboio da opção 5
+** menu5_cor: Cria a cor do comboio da opção 5
 */
 void menu5_cor(COMBOIO **comboios, int k, int *num_comboios, char *str) {
 
@@ -577,7 +577,7 @@ void menu5_cor(COMBOIO **comboios, int k, int *num_comboios, char *str) {
 }
 
 /*
-** cria o identificador da ferrovia do comboio da opção 5
+** menu5_idfer: Cria o identificador da ferrovia do comboio da opção 5
 */
 void menu5_idfer(COMBOIO **comboios, int k, int *num_comboios, char *str) {
 
@@ -595,7 +595,7 @@ void menu5_idfer(COMBOIO **comboios, int k, int *num_comboios, char *str) {
 }
 
 /*
-** cria o identificador do ponto do comboio da opção 5
+** menu5_idponto: Cria o identificador do ponto do comboio da opção 5
 */
 void menu5_idponto(COMBOIO **comboios, int k, int *num_comboios, char *str) {
 
@@ -613,7 +613,7 @@ void menu5_idponto(COMBOIO **comboios, int k, int *num_comboios, char *str) {
 }
 
 /*
-** cria as viagens do comboio da opção 5
+** menu5_viagens: Cria as viagens do comboio da opção 5
 */
 void menu5_viagens(COMBOIO **comboios, int k, int *num_comboios) {
 
@@ -630,7 +630,7 @@ void menu5_viagens(COMBOIO **comboios, int k, int *num_comboios) {
 }
 
 /*
-**  insere um ponto no fim da lista
+**  inserirponto: Insere um ponto no fim da lista
 */
 int inserirponto(LINHA *ferrovia, PONTO ponto, char id[]) {
 
@@ -663,7 +663,7 @@ int inserirponto(LINHA *ferrovia, PONTO ponto, char id[]) {
 }
 
 /*
-** executa o comando LIGAR do config
+** ligalista: Executa o comando LIGAR do config
 */
 int ligalista(LINHA *ferrovia1, LINHA *ferrovia2, char ponto_entrada[], char ponto_saida[]) {
 
@@ -712,7 +712,7 @@ int ligalista(LINHA *ferrovia1, LINHA *ferrovia2, char ponto_entrada[], char pon
 }
 
 /*
-** apaga uma lista node a node
+** apagalista: Apaga uma lista node a node
 */
 void apagalista(LINHA *ferrovia) {
 
@@ -767,11 +767,13 @@ void InitEverything(int width, int height, TTF_Font **_font, SDL_Window** _windo
  * \return pointer para a janela gráfica criada
  */
 SDL_Window* CreateWindow(int width, int height)
-{
+{   
+    // declaração de variáveis
     SDL_Window *window;
+
     // inicializa a janela gráfica
     window = SDL_CreateWindow( "Simulação Ferroviária", WINDOW_POSX, WINDOW_POSY, width, height, 0 );
-    // vê se houveram erros
+    // avalia a existência de erros
     if ( window == NULL )
     {
         printf("Erro na criação da janela : %s\n", SDL_GetError());
@@ -788,8 +790,10 @@ SDL_Window* CreateWindow(int width, int height)
 ** \return pointer para o renderer criado
 */
 SDL_Renderer* CreateRenderer(int width, int height, SDL_Window *_window)
-{
+{   
+    // declaração de variáveis
     SDL_Renderer *g_pRenderer;
+
     // inicializa renderer
     g_pRenderer = SDL_CreateRenderer( _window, -1, 0 );
 
@@ -819,9 +823,9 @@ void InitFont()
 }
 
 /*
-** renderRailroad: Apresenta na janela gráfica a ferrovia (pontos e troços)
+** renderRailroad: Apresenta na janela gráfica as ferrovias (pontos e troços)
 */
-void renderRailroad (SDL_Renderer * g_pRenderer, LINHA *lista, int num_ferrovias, TTF_Font *_font)
+void renderRailroad (SDL_Renderer * g_pRenderer, LINHA *lista, TTF_Font *_font, int num_ferrovias)
 {
     // declaração de variáveis
     LINHA *atual = lista;
@@ -830,12 +834,7 @@ void renderRailroad (SDL_Renderer * g_pRenderer, LINHA *lista, int num_ferrovias
     COR cor;
     COORDENADAS local;
 
-    // o renderer fica da cor branca
-    SDL_SetRenderDrawColor( g_pRenderer, 255, 255, 255, 255 );
-
-    // limpa a janela
-    SDL_RenderClear( g_pRenderer );
-
+    
     while(atual->proximo1 != NULL) {
         // Cor usada será branca (troços ferroviários serão desta cor)
         SDL_SetRenderDrawColor(g_pRenderer, 0, 0, 0, 255);
@@ -850,7 +849,7 @@ void renderRailroad (SDL_Renderer * g_pRenderer, LINHA *lista, int num_ferrovias
                            atual->proximo1->dados.y);
 
         if(strcmp(atual->dados.tipo, "VIA") == 0){
-           filledCircleRGB(g_pRenderer, atual->dados.x, atual->dados.y, 6, 190, 190, 190); 
+           filledCircleRGB(g_pRenderer, atual->dados.x, atual->dados.y, 6, cor.r, cor.g, cor.b); 
         }  
         else if(strcmp(atual->dados.tipo, "EST") == 0){
            filledCircleRGB(g_pRenderer, atual->dados.x, atual->dados.y, 20, cor.r, cor.g, cor.b);
@@ -871,7 +870,7 @@ void renderRailroad (SDL_Renderer * g_pRenderer, LINHA *lista, int num_ferrovias
     // desenha o primeiro ponto de novo (para ficar por cima do troço)
     cor = stringRGB(lista->dados.cor);
     if(strcmp(lista->dados.tipo, "VIA") == 0){
-        filledCircleRGB(g_pRenderer, lista->dados.x, lista->dados.y, 6, 190, 190, 190); 
+        filledCircleRGB(g_pRenderer, lista->dados.x, lista->dados.y, 6, cor.r, cor.g, cor.b); 
     }  
     else if(strcmp(atual->dados.tipo, "EST") == 0){
         filledCircleRGB(g_pRenderer, lista->dados.x, lista->dados.y, 20, cor.r, cor.g, cor.b);
@@ -883,7 +882,7 @@ void renderRailroad (SDL_Renderer * g_pRenderer, LINHA *lista, int num_ferrovias
     // desenha o último ponto
     cor = stringRGB(ultimo->dados.cor);
     if(strcmp(ultimo->dados.tipo, "VIA") == 0){
-        filledCircleRGB(g_pRenderer, ultimo->dados.x, ultimo->dados.y, 6, 190, 190, 190); 
+        filledCircleRGB(g_pRenderer, ultimo->dados.x, ultimo->dados.y, 6, cor.r, cor.g, cor.b); 
     }        
     else if(strcmp(ultimo->dados.tipo, "EST") == 0){
         filledCircleRGB(g_pRenderer, ultimo->dados.x, ultimo->dados.y, 20, cor.r, cor.g, cor.b);
@@ -901,7 +900,7 @@ void renderRailroad (SDL_Renderer * g_pRenderer, LINHA *lista, int num_ferrovias
 */
 void renderMenu (SDL_Renderer *g_pRenderer, int width, int height, TTF_Font *_font)
 {
-    //declaração das variáveis
+    //declaração de variáveis
     SDL_Rect R1, R2, R3;
     SDL_Color black = { 0, 0, 0 };
     COORDENADAS local;
@@ -962,7 +961,7 @@ void renderTrains (SDL_Renderer * g_pRenderer, COMBOIO comboios, TTF_Font *_font
 */
 void filledCircleRGB(SDL_Renderer * g_pRenderer, int _circleX, int _circleY, int _circleR, int _r, int _g, int _b)
 {
-    // declaração das variáveis
+    // declaração de variáveis
     int off_x = 0;
     int off_y = 0;
     float degree = 0.0;
@@ -988,7 +987,7 @@ void filledCircleRGB(SDL_Renderer * g_pRenderer, int _circleX, int _circleY, int
 }
 
 /*
-** stringRGB: Dado um dado do tipo PONTO retorna um valor RGB 
+** stringRGB: Dado um dado do tipo PONTO retorna um valor do tipo COR (3 inteiros correspondentes à cor) 
 */
 COR stringRGB (char corstr[LINEMAX])
 {
@@ -1090,11 +1089,10 @@ void RenderText(COORDENADAS local, const char *text, TTF_Font *_font, SDL_Color 
 /*
 ** getCoords: devolve x e y para desenhar os comboios nas coordenadas certas
 ** \param *lista são retirados da lista as coordenadas dos pontos
-** \param num_ferrovias usado para verificar todas as ferrovias
 ** \param _indent identificação da ferrovia onde o comboio se encontra inicialmente
 ** \param _ponto identificação do ponto da ferrovia onde o comboio se encontra inicialmente
 */
-COORDENADAS getCoords(LINHA *lista, int num_ferrovias, char _ident[LINEMAX], char _ponto[LINEMAX])
+COORDENADAS getCoords(LINHA *lista, char _ident[LINEMAX], char _ponto[LINEMAX])
 {
     // declaração das variáveis
     COORDENADAS ponto = {0,0}; // onde estarão guardadas as coordenadas pretendidas
@@ -1134,3 +1132,4 @@ COORDENADAS getCoords(LINHA *lista, int num_ferrovias, char _ident[LINEMAX], cha
 
     return ponto;
 }
+
