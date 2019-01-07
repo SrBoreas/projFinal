@@ -302,6 +302,8 @@ int main(int argc, char *argv[])
                     }  
                     // render da ferrovia
                     renderRailroad(g_pRenderer, *ferrovias, num_ferrovias);
+                    // render do menu interativo
+                    renderMenu (g_pRenderer, janela.dimx, janela.dimy, serif);
                     // aparece no ecrã todas as alterações feitas previamente
                     SDL_RenderPresent(g_pRenderer);
                     // adiciona-se um delay (responsável pela velocidade dos comboios)

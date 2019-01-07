@@ -73,12 +73,14 @@ void menu5_viagens(COMBOIO **comboios, int k, int *num_comboios); // cria as via
 /*
 ** protótipos de funções (parte gráfica)
 */
-void renderRailroad (SDL_Renderer * g_pRenderer, LINHA *lista, int num_ferrovias);
+void renderRailroad (SDL_Renderer *g_pRenderer, LINHA *lista, int num_ferrovias);
+void renderMenu (SDL_Renderer *g_pRenderer, int width, int height, TTF_Font *_font);
 void InitEverything(int width, int height, TTF_Font **_font, SDL_Window** _window, SDL_Renderer** g_pRenderer);
 SDL_Window* CreateWindow(int width, int height);
 SDL_Renderer* CreateRenderer(int width, int height, SDL_Window *_window);
 void InitFont();
 void filledCircleRGB(SDL_Renderer * g_pRenderer, int _circleX, int _circleY, int _circleR, int _r, int _g, int _b);
 COR stringRGB (PONTO temporario);
+void RenderText(int x, int y, const char *text, TTF_Font *_font, SDL_Color *_color, SDL_Renderer* g_pRenderer);
 
 #endif
