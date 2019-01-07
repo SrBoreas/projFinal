@@ -477,8 +477,8 @@ int menu4(COMBOIO **comboios, int *num_comboios) {
 int menu5(COMBOIO **comboios, int *num_comboios) {
 
     // declaração de variáveis
-    int i; // contador
-    int k; // verificador do return do scanf
+    int i = 0; // contador
+    int k = 0; // verificador do return do scanf
     char *str; // string auxiliar
 
     // alocação de memória
@@ -555,7 +555,17 @@ void menu5_cor(COMBOIO **comboios, int k, int *num_comboios, char *str) {
 
     printf("\nInsira a cor do novo comboio: ");
     k = scanf("%s", str);
-    while (k != 1 || strlen(str) > 20 || (strcmp(str, "VERMELHO") != 0 && strcmp(str, "AZUL") != 0 && strcmp(str, "AMARELO") != 0 && strcmp(str, "VERDE") != 0 && strcmp(str, "CINZENTO") != 0 && strcmp(str, "CASTANHO") != 0 && strcmp(str, "PRETO") != 0 && strcmp(str, "CYAN") != 0 && strcmp(str, "ROXO") != 0 && strcmp(str, "BRANCO") != 0) ) {
+    while (k != 1 || strlen(str) > 20 || (strcmp(str, "VERMELHO") != 0 && 
+                                          strcmp(str, "AZUL") != 0 && 
+                                          strcmp(str, "AMARELO") != 0 && 
+                                          strcmp(str, "VERDE") != 0 && 
+                                          strcmp(str, "CINZENTO") != 0 && 
+                                          strcmp(str, "CASTANHO") != 0 && 
+                                          strcmp(str, "PRETO") != 0 && 
+                                          strcmp(str, "CYAN") != 0 && 
+                                          strcmp(str, "ROXO") != 0 && 
+                                          strcmp(str, "BRANCO") != 0)) 
+    {
         flushinput();
         printf("\nCor inválida. Insira novamente: ");
         k = scanf("%s", str);
@@ -662,7 +672,7 @@ int ligalista(LINHA *ferrovia1, LINHA *ferrovia2, char ponto_entrada[], char pon
     LINHA *atual2 = ferrovia2;
     int verifica_entrada = 0; // diz se o ponto de entrada existe na ferrovia
     int verifica_saida = 0; // diz se o ponto de saida existe na ferrovia
-    int verifica_memoria = 0; // verifica a alocação de memória
+    //int verifica_memoria = 0; // verifica a alocação de memória
 
     // verifica a existência dos pontos nas ferrovias
     if (strcmp(atual1->dados.identificador, ponto_entrada) == 0) {
@@ -925,32 +935,21 @@ void renderMenu (SDL_Renderer *g_pRenderer, int width, int height, TTF_Font *_fo
 }
 
 /*
-** trainCoords
-*/
-COORDENADAS trainCoords (LINHA *lista, char nome_ferrovia[LINEMAX], char nome_ponto[LINEMAX], int num_ferrovias)
-{
-    // declaração das variáveis
-    COORDENADAS coords;
-
-    printf("INPUT ferrovia: %s", nome_ferrovia);
-    printf("INPUT ponto: %s\n", nome_ponto);
-    coords = getCoords(lista, num_ferrovias, nome_ferrovia, nome_ponto);
-
-    return coords;
-}
-
-/*
 ** renderTrains: apresenta na janela gráfica os comboios a andar
 */
 void renderTrains (SDL_Renderer * g_pRenderer, COMBOIO comboios, TTF_Font *_font, COORDENADAS _coords)
 {
     // declaração de variáveis
     COR cor;
+    SDL_Color black = { 0, 0, 0 };
+    COORDENADAS local;
+
+    local.x = _coords.x - comboios.raio;
+    local.y = _coords.y - (comboios.raio + 10);
 
     cor = stringRGB(comboios.cor);
-    printf("%d %d\n", _coords.x, _coords.y);
     filledCircleRGB(g_pRenderer, _coords.x, _coords.y, comboios.raio, cor.r, cor.g, cor.b);
-
+    RenderText(local, comboios.identificador, _font, &black, g_pRenderer);
     return;
 }
 
@@ -1090,7 +1089,7 @@ void RenderText(COORDENADAS local, const char *text, TTF_Font *_font, SDL_Color 
 
 /*
 ** getCoords: devolve x e y para desenhar os comboios nas coordenadas certas
-** \param *lista são retirados da lista as coordenadas dos pontosc
+** \param *lista são retirados da lista as coordenadas dos pontos
 ** \param num_ferrovias usado para verificar todas as ferrovias
 ** \param _indent identificação da ferrovia onde o comboio se encontra inicialmente
 ** \param _ponto identificação do ponto da ferrovia onde o comboio se encontra inicialmente
@@ -1098,26 +1097,40 @@ void RenderText(COORDENADAS local, const char *text, TTF_Font *_font, SDL_Color 
 COORDENADAS getCoords(LINHA *lista, int num_ferrovias, char _ident[LINEMAX], char _ponto[LINEMAX])
 {
     // declaração das variáveis
-    COORDENADAS ponto; // onde estarão guardadas as coordenadas pretendidas
+    COORDENADAS ponto = {0,0}; // onde estarão guardadas as coordenadas pretendidas
+    int verifica_identidade=0;
+    int verifica_ponto = 0;
+    LINHA *atual1 = lista;
+    LINHA *atual2 = lista;
 
+    // verifica se existe esse identificador de ferrovia
+    if (strcmp(atual1->identificador, _ident) == 0) {
+        verifica_identidade = 1;
+    }
+    while (strcmp(atual1->identificador, _ident) != 0) {
+        atual1 = atual1->proximo1;
+        if (strcmp(atual1->identificador, _ident) == 0) {
+            verifica_identidade = 1;
+        }
+    }
 
-    // procura a ferrovia
-    //for (int i = 0; i < num_ferrovias; i++) {
-        //if ((strcmp(lista->identificador, _ident)) == 0){
-            //if ((strcmp(lista->dados->identificador, _ponto)) == 0){
-                ponto.x = lista->dados.x;
-                ponto.y = lista->dados.y;
-            //}
-            //else {
-                //printf("%s ---- ERRO\n", lista->dados->identificador);
-                //printf("ponto mal?\n");
-            //}
-        //}
+    // verifica se existe esse identificador do ponto
+    if (strcmp(atual2->dados.identificador, _ponto) == 0) {
+        verifica_ponto = 1;
+    }
+    while (strcmp(atual2->dados.identificador, _ponto) != 0) {
+        atual2 = atual2->proximo1;
+        if (strcmp(atual2->dados.identificador, _ponto) == 0) {
+            verifica_ponto = 1;
+        }
+    }
+    
+    // devolve as coordenadas do ponto  pretendido
+    if (verifica_identidade == 1 && verifica_ponto == 1){
+        ponto.x = atual2->dados.x;
+        ponto.y = atual2->dados.y;
+        return ponto;
+    }
 
-        
-    //}
-    //if(lista->proximo != NULL){
-    //        lista = lista->proximo;
-    //    }
     return ponto;
 }

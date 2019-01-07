@@ -308,7 +308,7 @@ int main(int argc, char *argv[])
                     renderMenu (g_pRenderer, janela.dimx, janela.dimy, serif);
                     // render dos comboios
                     for(i = 0; i < num_comboios; i++){
-                        coords = trainCoords(*ferrovias, comboios[i]->nome_ferrovia, comboios[i]->nome_ponto, num_ferrovias);
+                        coords = getCoords(*ferrovias, num_ferrovias, comboios[i]->nome_ferrovia, comboios[i]->nome_ponto);
                         renderTrains(g_pRenderer, *comboios[i], serif, coords);
                     }
                     // aparece no ecrã todas as alterações feitas previamente
