@@ -9,7 +9,7 @@
 
 
 /*
-** flushinput: Dá flush ao stdin
+** flushinput: Função que dá flush ao stdin
 */
 void flushinput(void) {
 
@@ -21,7 +21,7 @@ void flushinput(void) {
 }
 
 /*
-** menu: Apresenta o menu e retorna a opcao escolhida
+** menu: Função que apresenta o menu e retorna a opcao escolhida
 */
 int menu(void) {
 
@@ -56,7 +56,7 @@ int menu(void) {
 }
 
 /*
-** lerconfig: Processa os dados do ficheiro config
+** lerconfig: Função que processa os dados do ficheiro config
 */
 int lerconfig(char config[], char **dados, int *num_linhas) {
 
@@ -75,10 +75,8 @@ int lerconfig(char config[], char **dados, int *num_linhas) {
     // leitura do ficheiro
    do {
         fgets(dados[*num_linhas], LINEMAX, fp);
-        if (strncmp(dados[*num_linhas], "%", sizeof(char)) != 0 && 
-            strspn(dados[*num_linhas], " \n\r\t") != strlen(dados[*num_linhas])) 
-        {        
-                (*num_linhas)++;
+        if (strncmp(dados[*num_linhas], "%", sizeof(char)) != 0 && strspn(dados[*num_linhas], " \n\r\t") != strlen(dados[*num_linhas])) {
+            (*num_linhas)++;
         }
    }while(feof(fp) == 0);
 
@@ -87,7 +85,6 @@ int lerconfig(char config[], char **dados, int *num_linhas) {
 
     return 0; // caso de sucesso na abertura do ficheiro
 }
-
 
 /*
 ** tamanhoJanela : Recebe o config e devolve o tamanho da janela gráfica
@@ -115,16 +112,17 @@ void processacomboio(COMBOIO **comboios, int *num_comboios, int num_linhas, char
     int i; // contador
     char str[8]; // string extra para o sscanf (8 caracters: "COMBOIO:")+
 
+
     // processamento dos dados
     for (i = 0; i < num_linhas; i++) {
         if ((strncmp(dadosconfig[i], "COMBOIO:", 8*sizeof(char))) == 0) {
             sscanf(dadosconfig[i], "%s %s %d %s %s %s %d", str, 
                                                            comboios[*num_comboios]->identificador, 
-                                                           &(comboios[*num_comboios]->raio), 
+                                                           &comboios[*num_comboios]->raio, 
                                                            comboios[*num_comboios]->cor, 
                                                            comboios[*num_comboios]->nome_ferrovia, 
                                                            comboios[*num_comboios]->nome_ponto, 
-                                                           &(comboios[*num_comboios]->viagens));
+                                                           &comboios[*num_comboios]->viagens);
             (*num_comboios)++;
         }
     }
@@ -138,65 +136,49 @@ void processacomboio(COMBOIO **comboios, int *num_comboios, int num_linhas, char
 int processaferrovias(LINHA **ferrovias, int *num_ferrovias, int num_linhas, char **dadosconfig) {
 
     // declaração das variáveis
-    int i, j = 0; // contador
+    int i, j = 0; // contadores
     int escrita = 0; // indica se está a ser processada uma linha ou não
     PONTO ponto; // ponto auxiliar
     char str[13]; // string auxiliar
     char identificador[4]; // matriz que guarda o identificador
+    int verificador = 0; // verifica que a memória foi alocada e que o sscanf leu os argumentos todos
 
     // processamento dos dados
     for (i = 0; i < num_linhas; i++) {
-        if (strncmp(dadosconfig[i], "FIM_DE_LINHA:", 13*sizeof(char)) == 0) { // se chegar ao fim da linha não há escrita no array
+        if (strncmp(dadosconfig[i], "FIM_DE_LINHA:", 13*sizeof(char)) == 0) { // se chegar ao fim da linha não há escrita no arrat
             escrita = 0;
             j = 0;
             (*num_ferrovias)++;
         }
         if (escrita == 1) { // caso a variável escrita tenha valor igual a 1, os dados são inseridos nas listas
-            sscanf(dadosconfig[i], "%s %d %d %s %s", ponto.identificador, &ponto.x, &ponto.y, ponto.cor, ponto.tipo);
-            if (j == 0) { // caso seja o primeiro node a ser inserido
-                ferrovias[*num_ferrovias]->anterior = NULL;
-                ferrovias[*num_ferrovias]->dados = (PONTO *)malloc(sizeof(PONTO));
-                if(ferrovias[*num_ferrovias]->dados == NULL) {
-                    printf("\nErro na alocação de memória");
-                    return -1;
-                }
+            verificador = sscanf(dadosconfig[i], "%s %d %d %s %s", ponto.identificador, &ponto.x, &ponto.y, ponto.cor, ponto.tipo);
+            if ((j == 0) && (verificador == 5)) {
                 // inserção dos dados
-                strcpy(ferrovias[*num_ferrovias]->dados->identificador, ponto.identificador);
-                ferrovias[*num_ferrovias]->dados->x = ponto.x;
-                ferrovias[*num_ferrovias]->dados->y = ponto.y;
-                strcpy(ferrovias[*num_ferrovias]->dados->cor, ponto.cor);
-                strcpy(ferrovias[*num_ferrovias]->dados->tipo, ponto.tipo);
-                ferrovias[*num_ferrovias]->proximo = NULL;
+                ferrovias[*num_ferrovias]->proximo1 = NULL;
+                ferrovias[*num_ferrovias]->proximo2 = NULL;
                 strcpy(ferrovias[*num_ferrovias]->identificador, identificador);
+                strcpy(ferrovias[*num_ferrovias]->dados.identificador, ponto.identificador);
+                ferrovias[*num_ferrovias]->dados.x = ponto.x;
+                ferrovias[*num_ferrovias]->dados.y = ponto.y;
+                strcpy(ferrovias[*num_ferrovias]->dados.cor, ponto.cor);
+                strcpy(ferrovias[*num_ferrovias]->dados.tipo, ponto.tipo);
+                ferrovias[*num_ferrovias]->dados.entrada = 1;
+                ferrovias[*num_ferrovias]->dados.saida = 1;
             }
-            if (j > 0) { // caso seja depois do primeiro node a ser inserido
-                // alocação de memória
-                ferrovias[*num_ferrovias]->proximo = (LINHA *)malloc(sizeof(LINHA));
-                if (ferrovias[*num_ferrovias]->proximo == NULL) {
-                    printf("\nErro na alocação de memória");
-                    return -1;
-                }
-                ferrovias[*num_ferrovias]->proximo->dados = (PONTO *)malloc(sizeof(PONTO));
-                if (ferrovias[*num_ferrovias]->proximo->dados == NULL) {
-                    printf("\nErro na alocação de memória");
-                    return -1;
-                }
+            if ((j > 0) && (verificador == 5)) { // caso seja depois do primeiro node a ser inserido
                 // inserção dos dados
-                strcpy(ferrovias[*num_ferrovias]->proximo->dados->identificador, ponto.identificador);
-                ferrovias[*num_ferrovias]->proximo->dados->x = ponto.x;
-                ferrovias[*num_ferrovias]->proximo->dados->y = ponto.y;
-                strcpy(ferrovias[*num_ferrovias]->proximo->dados->cor, ponto.cor);
-                strcpy(ferrovias[*num_ferrovias]->proximo->dados->tipo, ponto.tipo);
-                ferrovias[*num_ferrovias]->proximo->anterior = ferrovias[*num_ferrovias];
-                ferrovias[*num_ferrovias]->proximo->proximo = NULL;
-                strcpy(ferrovias[*num_ferrovias]->proximo->identificador, identificador);
-                ferrovias[*num_ferrovias] = ferrovias[*num_ferrovias]->proximo;
+                verificador = inserirponto(ferrovias[*num_ferrovias], ponto, identificador);
+                if (verificador == -1)
+                    return -1;
             }
             j++;
         }
-        if ((strncmp(dadosconfig[i], "LINHA:", 6*sizeof(char))) == 0) { // caso cheguemos ao princípo de uma linha a variável escrita é igualada e esta inicia
-            sscanf(dadosconfig[i], "%s %s", str, identificador);
-            escrita = 1;
+        if ((strncmp(dadosconfig[i], "LINHA:", 6*sizeof(char))) == 0) { // caso cheguemos ao princípo de uma linha 
+                                                                        // a variável escrita é igualada e esta inicia
+            
+            verificador = sscanf(dadosconfig[i], "%s %s", str, identificador);
+            if (verificador == 2)
+                escrita = 1;
         }
     }
 
@@ -204,85 +186,109 @@ int processaferrovias(LINHA **ferrovias, int *num_ferrovias, int num_linhas, cha
 }
 
 /*
-** recebe o config e liga as ferrovias (não está feito)
-
-void processaligar(LINHA **ferrovias, int *num_ferrovias, int num_linhas, char **dadosconfig) {
+** processaligar: Recebe o config e liga as ferrovias (não está feito)
+*/
+int processaligar(LINHA **ferrovias, int num_ferrovias, int num_linhas, char **dadosconfig) {
 
     // declaração das variáveis
     char linha_saida[4], ponto_saida[4], linha_entrada[4], ponto_entrada[4]; // strings que guardam os locais de saída e entrada
-    int i; // contador
+    int i, j; // contadores
+    int pos_saida = -1, pos_entrada = -1; // guardam as posições no array da ferrovia de saída e da de entrada
+    char aux[6]; // string auxiliar
+    int verificador; // verifica a alocação de memória em ligalista
 
-    // processamento das linhas
+    // procura das ligações no config
     for (i = 0; i < num_linhas; i++) {
+        if (strncmp(dadosconfig[i], "LIGAR:", sizeof(char)*6) == 0) {
+            sscanf(dadosconfig[i], "%s %s %s %s %s", aux, linha_saida, ponto_saida, linha_entrada, ponto_entrada);
+            // procura as ferrovias com identificadores correspondentes
+            for (j = 0; j < num_ferrovias; j++) {
+                if (strcmp(linha_saida, ferrovias[j]->identificador) == 0) {
+                    pos_saida = j;
+                }
+                if (strcmp(linha_entrada, ferrovias[j]->identificador) == 0) {
+                    pos_entrada = j;
+                }
+            }
 
+            if (pos_entrada != -1 && pos_saida != -1 && pos_entrada != pos_saida) {
+                verificador = ligalista(ferrovias[pos_entrada], ferrovias[pos_saida], ponto_entrada, ponto_saida);
+            }
+
+            if (verificador == -1) {
+                return -1;
+            }
+        }
     }
 
-    return;
+    return 0;
 }
 
-*/
 
 /*
-** imprime uma lista do head até ao tail
+** printlista: Imprime uma lista do head até ao tail
 */
 void printlista(LINHA *lista) {
 
-    while (lista->anterior != NULL) { // "rebobinamento" da lista
-        lista = lista->anterior;
-    }
+    // declaração de variáveis
+    LINHA *atual = lista;
 
     // impressão da lista
-    printf("\nIDENTIFICADOR\tX\tY\tCOR\tTIPO\n");
+    printf("\nIDENTIFICADOR\tX\tY\tCOR\tTIPO\tNºENTR.\tNºSA\t\n");
 
     /*
     ** NOTA: existem dois printfs diferentes puramente por questões estéticas relacionadas
     ** com a forma como \t funciona
     */
-    while(lista->proximo != NULL) { // impressão até ao penúltimo node
-        if ((strcmp(lista->dados->cor, "VERMELHO")) == 0 || 
-            (strcmp(lista->dados->cor, "CASTANHO")) == 0 || 
-            (strcmp(lista->dados->cor, "CINZENTO")) == 0) {
-            
-                printf("\n%s\t\t%d\t%d\t%s%s", lista->dados->identificador, 
-                                               lista->dados->x, 
-                                               lista->dados->y, 
-                                               lista->dados->cor, 
-                                               lista->dados->tipo);
-                
-                lista = lista->proximo; 
+    while(atual->proximo1 != NULL) { // impressão até ao penúltimo node
+        if ((strcmp(atual->dados.cor, "VERMELHO")) == 0 || (strcmp(atual->dados.cor, "CASTANHO")) == 0 || 
+                                                           (strcmp(atual->dados.cor, "CINZENTO")) == 0) 
+        {
+            printf("\n%s\t\t%d\t%d\t%s%s\t%d\t%d", atual->dados.identificador, 
+                                                   atual->dados.x, 
+                                                   atual->dados.y, 
+                                                   atual->dados.cor, 
+                                                   atual->dados.tipo, 
+                                                   atual->dados.entrada, 
+                                                   atual->dados.saida);
+            atual = atual->proximo1;
         }
-        else {
-                printf("\n%s\t\t%d\t%d\t%s\t%s",lista->dados->identificador, 
-                                                lista->dados->x, 
-                                                lista->dados->y, 
-                                                lista->dados->cor, 
-                                                lista->dados->tipo);
-
-                lista = lista->proximo;
+        else 
+        {
+            printf("\n%s\t\t%d\t%d\t%s\t%s\t%d\t%d", atual->dados.identificador, 
+                                                     atual->dados.x, 
+                                                     atual->dados.y, 
+                                                     atual->dados.cor, 
+                                                     atual->dados.tipo, 
+                                                     atual->dados.entrada, 
+                                                     atual->dados.saida);
+            atual = atual->proximo1;
         }
     }
 
     // impressão do último node
-    if ((strcmp(lista->dados->cor, "VERMELHO")) == 0 || 
-        (strcmp(lista->dados->cor, "CASTANHO")) == 0 || 
-        (strcmp(lista->dados->cor, "CINZENTO")) == 0) {
-            
-            printf("\n%s\t\t%d\t%d\t%s%s\n", lista->dados->identificador, 
-                                             lista->dados->x, 
-                                             lista->dados->y, 
-                                             lista->dados->cor, 
-                                             lista->dados->tipo);
-            
-            lista = lista->proximo;
+    if ((strcmp(atual->dados.cor, "VERMELHO")) == 0 || (strcmp(atual->dados.cor, "CASTANHO")) == 0 || 
+                                                       (strcmp(atual->dados.cor, "CINZENTO")) == 0) 
+    {
+        printf("\n%s\t\t%d\t%d\t%s%s\t%d\t%d\n", atual->dados.identificador, 
+                                                 atual->dados.x, 
+                                                 atual->dados.y, 
+                                                 atual->dados.cor, 
+                                                 atual->dados.tipo, 
+                                                 atual->dados.entrada, 
+                                                 atual->dados.saida);
+        atual = atual->proximo1;
     }
-    else {
-            printf("\n%s\t\t%d\t%d\t%s\t%s\n", lista->dados->identificador, 
-                                               lista->dados->x, 
-                                               lista->dados->y, 
-                                               lista->dados->cor, 
-                                               lista->dados->tipo);
-            
-            lista = lista->proximo;
+    else 
+    {
+        printf("\n%s\t\t%d\t%d\t%s\t%s\t%d\t%d\n", atual->dados.identificador, 
+                                                   atual->dados.x, 
+                                                   atual->dados.y, 
+                                                   atual->dados.cor, 
+                                                   atual->dados.tipo, 
+                                                   atual->dados.entrada, 
+                                                   atual->dados.saida);
+        atual = atual->proximo1;
     }
 
     return;
@@ -336,66 +342,6 @@ int menu1(LINHA **lista, int num_ferrovias) {
 }
 
 /*
-** menu2: Elimina uma das ferrovias (não funciona, dá segmentation fault)
-
-int menu2(LINHA **lista, int *num_ferrovias) {
-
-    // declaração de variáveis
-    int k; // verificador do return do scanf
-    int i, j; // contadores
-    char *id; // string que guarda o identificador que o utilizador escreve
-    LINHA *aux; // lista auxiliar
-
-    // alocação de memória
-    id = (char *)calloc(LINEMAX, sizeof(char));
-    if (id == NULL) {
-        printf("\nErro ao alocar memória");
-        return -1;
-    }
-
-    // apresentação menu
-    printf("\nInsira o identificador da ferrovia que deseja eliminar: ");
-    k = scanf("%s", id);
-    while(k != 1 || (strlen(id)) > 4) {
-        flushinput();
-        printf("\nIdentificador inválido. Insira novamente: ");
-        k = scanf("%s", id);
-    }
-
-   
-        //procura o identificador correspondente na lista e tenta mexer todos
-        //os elementos à direita do que queremos eliminar uma coluna para a esquerda
-        //eliminando depois o último elemento do array de listas
-        //e decrementando a variável que indica o número de ferrovias
-   
-    for (i = 0; i < *num_ferrovias; i++) {
-        if (strcmp(lista[i]->identificador, id) == 0) {
-            for (j = i; j < *num_ferrovias - 1; j++) {
-                lista[j]->dados = lista[j+1]->dados;
-                strcpy(lista[j]->identificador, lista[j+1]->identificador);
-                lista[j]->proximo = lista[j+1]->proximo;
-                lista[j]->anterior = lista[j+1]->anterior;
-            }
-            while (lista[*num_ferrovias] != NULL) {
-                aux = lista[*num_ferrovias];
-                lista[*num_ferrovias] = lista[*num_ferrovias]->anterior;
-                free(aux->dados);
-                free(aux);
-            }
-            *(num_ferrovias)--;
-
-        }
-    }
-
-    // libertação de memória
-    free(id);
-
-    return 0;
-}
-
-*/
-
-/*
 ** menu3: Apresenta o menu da 3ª opção e mostra a informação de um dos comboios
 */
 int menu3(COMBOIO **comboios, int num_comboios) {
@@ -427,12 +373,10 @@ int menu3(COMBOIO **comboios, int num_comboios) {
     for (i = 0; i < num_comboios; i++) {
         if (strcmp(comboios[i]->identificador, id) == 0) {
             encontrado = 1; // indica que é verdadeira a correspondência
-
             // impressão dos dados do comboio
             printf("\nIDENTIFICADOR\tRAIO\tCOR\tFERROVIA INÍCIO\tVIAGENS");
-            if (strcmp(comboios[i]->cor, "VERMELHO") == 0 || 
-                strcmp(comboios[i]->cor, "CASTANHO") == 0 || 
-                strcmp(comboios[i]->cor, "CINZENTO") == 0) 
+            if (strcmp(comboios[i]->cor, "VERMELHO") == 0 || strcmp(comboios[i]->cor, "CASTANHO") == 0 || 
+                                                             strcmp(comboios[i]->cor, "CINZENTO") == 0) 
             {
                 printf("\n%s\t\t%d\t%s %s\t %s\t%d\n", comboios[i]->identificador, 
                                                        comboios[i]->raio, 
@@ -441,7 +385,8 @@ int menu3(COMBOIO **comboios, int num_comboios) {
                                                        comboios[i]->nome_ponto, 
                                                        comboios[i]->viagens);
             }
-            else{
+            else
+            {
                 printf("\n%s\t\t%d\t%s\t%s\t %s\t%d\n", comboios[i]->identificador, 
                                                         comboios[i]->raio, 
                                                         comboios[i]->cor, 
@@ -587,7 +532,7 @@ void menu5_id(char *str, int k, int i, COMBOIO **comboios, int *num_comboios) {
 }
 
 /*
-** menu5_raio: Cria o raio do comboio da opção 5
+** menu5_raio: cria o raio do comboio da opção 5
 */
 void menu5_raio(COMBOIO **comboios, int k, int *num_comboios) {
 
@@ -611,14 +556,14 @@ void menu5_cor(COMBOIO **comboios, int k, int *num_comboios, char *str) {
     printf("\nInsira a cor do novo comboio: ");
     k = scanf("%s", str);
     while (k != 1 || strlen(str) > 20 || (strcmp(str, "VERMELHO") != 0 && 
-                                          strcmp(str, "AZUL") != 0     && 
-                                          strcmp(str, "AMARELO") != 0  && 
-                                          strcmp(str, "VERDE") != 0    && 
+                                          strcmp(str, "AZUL") != 0 && 
+                                          strcmp(str, "AMARELO") != 0 && 
+                                          strcmp(str, "VERDE") != 0 && 
                                           strcmp(str, "CINZENTO") != 0 && 
                                           strcmp(str, "CASTANHO") != 0 && 
-                                          strcmp(str, "PRETO") != 0    && 
-                                          strcmp(str, "CYAN") != 0     && 
-                                          strcmp(str, "ROXO") != 0     && 
+                                          strcmp(str, "PRETO") != 0 && 
+                                          strcmp(str, "CYAN") != 0 && 
+                                          strcmp(str, "ROXO") != 0 && 
                                           strcmp(str, "BRANCO") != 0)) 
     {
         flushinput();
@@ -684,6 +629,106 @@ void menu5_viagens(COMBOIO **comboios, int k, int *num_comboios) {
     return;
 }
 
+/*
+**  inserirponto: Insere um ponto no fim da lista
+*/
+int inserirponto(LINHA *ferrovia, PONTO ponto, char id[]) {
+
+    // declaração de variáveis
+    LINHA *atual = ferrovia;
+
+    // ir até ao fim da lista
+    while (atual->proximo1 != NULL) {
+        atual = atual->proximo1;
+    }
+
+    atual->proximo1 = (LINHA *)malloc(sizeof(LINHA));
+    if (atual->proximo1 == NULL) {
+        printf("\nErro na alocação de memória\n");
+        return -1;
+    }
+
+    strcpy(atual->proximo1->identificador, id);
+    strcpy(atual->proximo1->dados.identificador, ponto.identificador);
+    atual->proximo1->dados.x = ponto.x;
+    atual->proximo1->dados.y = ponto.y;
+    strcpy(atual->proximo1->dados.cor, ponto.cor);
+    strcpy(atual->proximo1->dados.tipo, ponto.tipo);
+    atual->proximo1->dados.entrada = 1;
+    atual->proximo1->dados.saida = 1;
+    atual->proximo1->proximo1 = NULL;
+    atual->proximo1->proximo2 = NULL;
+
+    return 0;
+}
+
+/*
+** ligalista: Executa o comando LIGAR do config
+*/
+int ligalista(LINHA *ferrovia1, LINHA *ferrovia2, char ponto_entrada[], char ponto_saida[]) {
+
+    // declaração de variáveis
+    LINHA *atual1 = ferrovia1;
+    LINHA *atual2 = ferrovia2;
+    int verifica_entrada = 0; // diz se o ponto de entrada existe na ferrovia
+    int verifica_saida = 0; // diz se o ponto de saida existe na ferrovia
+    //int verifica_memoria = 0; // verifica a alocação de memória
+
+    // verifica a existência dos pontos nas ferrovias
+    if (strcmp(atual1->dados.identificador, ponto_entrada) == 0) {
+        verifica_entrada = 1;
+    }
+    while (strcmp(atual1->dados.identificador, ponto_entrada) != 0) {
+        atual1 = atual1->proximo1;
+        if (strcmp(atual1->dados.identificador, ponto_entrada) == 0 && atual2->dados.entrada == 1) {
+            verifica_entrada = 1;
+        }
+    }
+
+    if (strcmp(atual2->dados.identificador, ponto_saida) == 0) {
+        verifica_saida = 1;
+    }
+    while (strcmp(atual2->dados.identificador, ponto_saida) != 0) {
+        atual2 = atual2->proximo1;
+        if (strcmp(atual2->dados.identificador, ponto_saida) == 0 && atual2->dados.saida == 1) {
+            verifica_saida = 1;
+        }
+    }
+
+    // liga as duas ferrovias caso os pontos existam
+    if (verifica_entrada == 1 && verifica_saida == 1) {
+        atual1->dados.entrada = 2;
+        atual2->dados.saida = 2;
+        atual2->proximo2 = (LINHA *)malloc(sizeof(LINHA));
+        if (atual2->proximo2 == NULL) {
+            printf("\nErro de alocaçã de memória\n");
+            return -1;
+        }
+        atual2->proximo2 = atual1;
+    }
+
+
+    return 0;
+}
+
+/*
+** apagalista: Apaga uma lista node a node
+*/
+void apagalista(LINHA *ferrovia) {
+
+    LINHA *atual = ferrovia;
+    LINHA *prox;
+
+    while (atual != NULL) {
+        prox = atual->proximo1;
+        free(atual);
+        atual = prox;
+    }
+    ferrovia = NULL;
+
+    return;
+}
+
 /* -------------------------------------------- Parte Gráfica -------------------------------------------- */
 
 
@@ -722,11 +767,13 @@ void InitEverything(int width, int height, TTF_Font **_font, SDL_Window** _windo
  * \return pointer para a janela gráfica criada
  */
 SDL_Window* CreateWindow(int width, int height)
-{
+{   
+    // declaração de variáveis
     SDL_Window *window;
+
     // inicializa a janela gráfica
     window = SDL_CreateWindow( "Simulação Ferroviária", WINDOW_POSX, WINDOW_POSY, width, height, 0 );
-    // vê se houveram erros
+    // avalia a existência de erros
     if ( window == NULL )
     {
         printf("Erro na criação da janela : %s\n", SDL_GetError());
@@ -743,8 +790,10 @@ SDL_Window* CreateWindow(int width, int height)
 ** \return pointer para o renderer criado
 */
 SDL_Renderer* CreateRenderer(int width, int height, SDL_Window *_window)
-{
+{   
+    // declaração de variáveis
     SDL_Renderer *g_pRenderer;
+
     // inicializa renderer
     g_pRenderer = SDL_CreateRenderer( _window, -1, 0 );
 
@@ -774,83 +823,72 @@ void InitFont()
 }
 
 /*
-** renderRailroad: Apresenta na janela gráfica a ferrovia (pontos e troços)
+** renderRailroad: Apresenta na janela gráfica as ferrovias (pontos e troços)
 */
-void renderRailroad (SDL_Renderer * g_pRenderer, LINHA *lista, int num_ferrovias, TTF_Font *_font)
+void renderRailroad (SDL_Renderer * g_pRenderer, LINHA *lista, TTF_Font *_font, int num_ferrovias)
 {
-    
+    // declaração de variáveis
+    LINHA *atual = lista;
     LINHA *ultimo = NULL; // para no fim fechar a ferrovia formando um polígono
     SDL_Color black = { 0, 0, 0 };
     COR cor;
     COORDENADAS local;
 
-    // o renderer fica da cor branca
-    SDL_SetRenderDrawColor( g_pRenderer, 255, 255, 255, 255 );
-
-    // limpa a janela
-    SDL_RenderClear( g_pRenderer );
-
-    while (lista->anterior != NULL) { // "rebobinamento" da lista para termos o 1º valor
-        lista = lista->anterior;
-    }
-
-    while(lista->proximo != NULL) {
+    
+    while(atual->proximo1 != NULL) {
         // Cor usada será branca (troços ferroviários serão desta cor)
-        cor = stringRGB(lista->dados->cor);
-
         SDL_SetRenderDrawColor(g_pRenderer, 0, 0, 0, 255);
+
+        cor = stringRGB(atual->dados.cor);
+
         // desenha os troços da ferrovia
         SDL_RenderDrawLine(g_pRenderer, 
-                           lista->dados->x, 
-                           lista->dados->y,
-                           lista->proximo->dados->x, 
-                           lista->proximo->dados->y);
+                           atual->dados.x, 
+                           atual->dados.y,
+                           atual->proximo1->dados.x, 
+                           atual->proximo1->dados.y);
 
-        if(strcmp(lista->dados->tipo, "VIA") == 0){
-           filledCircleRGB(g_pRenderer, lista->dados->x, lista->dados->y, 6, 190, 190, 190); 
+        if(strcmp(atual->dados.tipo, "VIA") == 0){
+           filledCircleRGB(g_pRenderer, atual->dados.x, atual->dados.y, 6, cor); 
         }  
-        else if(strcmp(lista->dados->tipo, "EST") == 0){
-           filledCircleRGB(g_pRenderer, lista->dados->x, lista->dados->y, 20, cor.r, cor.g, cor.b);
-           local.x = lista->dados->x-16;
-           local.y = lista->dados->y-18; 
-           RenderText(local, lista->dados->identificador, _font, &black, g_pRenderer); 
+        else if(strcmp(atual->dados.tipo, "EST") == 0){
+           filledCircleRGB(g_pRenderer, atual->dados.x, atual->dados.y, 20, cor);
+           local.x = atual->dados.x-16;
+           local.y = atual->dados.y-18; 
+           RenderText(local, atual->dados.identificador, _font, &black, g_pRenderer); 
         }
         else printf("Ponto do tipo errado.\n");
 
-        lista = lista->proximo;
-        ultimo = lista;  // guarda o último valor da lista    
-    }
-
-    while (lista->anterior != NULL) { // "rebobinamento" da lista para ligar o 1º ponto ao último
-        lista = lista->anterior;
+        atual = atual->proximo1;
+        ultimo = atual;  // guarda o último valor da lista    
     }
 
     // fecha a ferrovia
     SDL_SetRenderDrawColor(g_pRenderer, 0, 0, 0, 255);
-    SDL_RenderDrawLine(g_pRenderer, lista->dados->x, lista->dados->y,ultimo->dados->x, ultimo->dados->y);
+    SDL_RenderDrawLine(g_pRenderer, lista->dados.x, lista->dados.y,ultimo->dados.x, ultimo->dados.y);
 
     // desenha o primeiro ponto de novo (para ficar por cima do troço)
-    cor = stringRGB(lista->dados->cor);
-    if(strcmp(lista->dados->tipo, "VIA") == 0){
-        filledCircleRGB(g_pRenderer, lista->dados->x, lista->dados->y, 6, 190, 190, 190); 
+    cor = stringRGB(lista->dados.cor);
+    if(strcmp(lista->dados.tipo, "VIA") == 0){
+        filledCircleRGB(g_pRenderer, lista->dados.x, lista->dados.y, 6, cor); 
     }  
-    else if(strcmp(lista->dados->tipo, "EST") == 0){
-        filledCircleRGB(g_pRenderer, lista->dados->x, lista->dados->y, 20, cor.r, cor.g, cor.b);
-        local.x = lista->dados->x-16;
-        local.y = lista->dados->y-18;
-        RenderText(local, lista->dados->identificador, _font, &black, g_pRenderer);  
+    else if(strcmp(atual->dados.tipo, "EST") == 0){
+        filledCircleRGB(g_pRenderer, lista->dados.x, lista->dados.y, 20, cor);
+        local.x = lista->dados.x-16;
+        local.y = lista->dados.y-18;
+        RenderText(local, lista->dados.identificador, _font, &black, g_pRenderer);  
     }
     
     // desenha o último ponto
-    cor = stringRGB(ultimo->dados->cor);
-    if(strcmp(ultimo->dados->tipo, "VIA") == 0){
-        filledCircleRGB(g_pRenderer, ultimo->dados->x, ultimo->dados->y, 6, 190, 190, 190); 
+    cor = stringRGB(ultimo->dados.cor);
+    if(strcmp(ultimo->dados.tipo, "VIA") == 0){
+        filledCircleRGB(g_pRenderer, ultimo->dados.x, ultimo->dados.y, 6, cor); 
     }        
-    else if(strcmp(ultimo->dados->tipo, "EST") == 0){
-        filledCircleRGB(g_pRenderer, ultimo->dados->x, ultimo->dados->y, 20, cor.r, cor.g, cor.b);
-        local.x = ultimo->dados->x-16;
-        local.y = ultimo->dados->y-18;
-        RenderText(local, ultimo->dados->identificador, _font, &black, g_pRenderer);  
+    else if(strcmp(ultimo->dados.tipo, "EST") == 0){
+        filledCircleRGB(g_pRenderer, ultimo->dados.x, ultimo->dados.y, 20, cor);
+        local.x = ultimo->dados.x-16;
+        local.y = ultimo->dados.y-18;
+        RenderText(local, ultimo->dados.identificador, _font, &black, g_pRenderer);  
     }
     else printf("Ponto do tipo errado.\n");
 
@@ -862,7 +900,7 @@ void renderRailroad (SDL_Renderer * g_pRenderer, LINHA *lista, int num_ferrovias
 */
 void renderMenu (SDL_Renderer *g_pRenderer, int width, int height, TTF_Font *_font)
 {
-    //declaração das variáveis
+    //declaração de variáveis
     SDL_Rect R1, R2, R3;
     SDL_Color black = { 0, 0, 0 };
     COORDENADAS local;
@@ -896,30 +934,21 @@ void renderMenu (SDL_Renderer *g_pRenderer, int width, int height, TTF_Font *_fo
 }
 
 /*
-** trainCoords
-*/
-COORDENADAS trainCoords (LINHA *lista, COMBOIO *comboios, int num_ferrovias)
-{
-    // declaração das variáveis
-    COORDENADAS coords;
-
-    coords = getCoords(lista, num_ferrovias, comboios->nome_ferrovia, comboios->nome_ponto);
-
-    return coords;
-}
-
-/*
 ** renderTrains: apresenta na janela gráfica os comboios a andar
 */
-void renderTrains (SDL_Renderer * g_pRenderer, COMBOIO *comboios, TTF_Font *_font, COORDENADAS _coords)
+void renderTrains (SDL_Renderer * g_pRenderer, COMBOIO comboios, TTF_Font *_font, COORDENADAS _coords)
 {
     // declaração de variáveis
     COR cor;
+    SDL_Color black = { 0, 0, 0 };
+    COORDENADAS local;
 
-    cor = stringRGB(comboios->cor);
-    printf("%d %d\n", _coords.x, _coords.y);
-    filledCircleRGB(g_pRenderer, _coords.x, _coords.y, comboios->raio, cor.r, cor.g, cor.b);
+    local.x = _coords.x - comboios.raio;
+    local.y = _coords.y - (comboios.raio + 10);
 
+    cor = stringRGB(comboios.cor);
+    filledCircleRGB(g_pRenderer, _coords.x, _coords.y, comboios.raio, cor);
+    RenderText(local, comboios.identificador, _font, &black, g_pRenderer);
     return;
 }
 
@@ -930,13 +959,17 @@ void renderTrains (SDL_Renderer * g_pRenderer, COMBOIO *comboios, TTF_Font *_fon
 ** \param _cicleR raio em px do círculo
 ** \param _r, _g, _b valores usados para a cor do círculo
 */
-void filledCircleRGB(SDL_Renderer * g_pRenderer, int _circleX, int _circleY, int _circleR, int _r, int _g, int _b)
+void filledCircleRGB(SDL_Renderer * g_pRenderer, int _circleX, int _circleY, int _circleR, COR cor)
 {
-    // declaração das variáveis
+    // declaração de variáveis
     int off_x = 0;
     int off_y = 0;
     float degree = 0.0;
     float step = M_PI / (_circleR*8);
+    int _r, _b, _g;
+    _r = cor.r;
+    _g = cor.g;
+    _b = cor.b;
     
     SDL_SetRenderDrawColor(g_pRenderer, _r, _g, _b, 255);
     
@@ -958,7 +991,7 @@ void filledCircleRGB(SDL_Renderer * g_pRenderer, int _circleX, int _circleY, int
 }
 
 /*
-** stringRGB: Dado um dado do tipo PONTO retorna um valor RGB 
+** stringRGB: Dado um dado do tipo PONTO retorna um valor do tipo COR (3 inteiros correspondentes à cor) 
 */
 COR stringRGB (char corstr[LINEMAX])
 {
@@ -1059,38 +1092,48 @@ void RenderText(COORDENADAS local, const char *text, TTF_Font *_font, SDL_Color 
 
 /*
 ** getCoords: devolve x e y para desenhar os comboios nas coordenadas certas
-** \param *lista são retirados da lista as coordenadas dos pontosc
-** \param num_ferrovias usado para verificar todas as ferrovias
+** \param *lista são retirados da lista as coordenadas dos pontos
 ** \param _indent identificação da ferrovia onde o comboio se encontra inicialmente
 ** \param _ponto identificação do ponto da ferrovia onde o comboio se encontra inicialmente
 */
-COORDENADAS getCoords(LINHA *lista, int num_ferrovias, char _ident[LINEMAX], char _ponto[LINEMAX])
+COORDENADAS getCoords(LINHA *lista, char _ident[LINEMAX], char _ponto[LINEMAX])
 {
     // declaração das variáveis
-    COORDENADAS ponto; // onde estarão guardadas as coordenadas pretendidas
-    int i; // contador
+    COORDENADAS ponto = {0,0}; // onde estarão guardadas as coordenadas pretendidas
+    int verifica_identidade=0;
+    int verifica_ponto = 0;
+    LINHA *atual1 = lista;
+    LINHA *atual2 = lista;
 
-    while (lista->anterior != NULL) { // "rebobinamento" da lista
-        lista = lista->anterior;
+    // verifica se existe esse identificador de ferrovia
+    if (strcmp(atual1->identificador, _ident) == 0) {
+        verifica_identidade = 1;
     }
-
-    // procura a ferrovia
-    for (i = 0; i < num_ferrovias; i++) {
-        if ((strcmp(lista->identificador, _ident)) == 0){
-            if ((strcmp(lista->dados->identificador, _ponto)) == 0){
-                ponto.x = lista->dados->x;
-                ponto.y = lista->dados->y;
-            }
-            else {
-                printf("%s\n", lista->dados->identificador);
-                printf("ponto mal?\n");
-            }
-        }
-        else printf("ferrovia mal?\n");
-
-        if(lista->proximo != NULL){
-            lista = lista->proximo;
+    while (strcmp(atual1->identificador, _ident) != 0) {
+        atual1 = atual1->proximo1;
+        if (strcmp(atual1->identificador, _ident) == 0) {
+            verifica_identidade = 1;
         }
     }
+
+    // verifica se existe esse identificador do ponto
+    if (strcmp(atual2->dados.identificador, _ponto) == 0) {
+        verifica_ponto = 1;
+    }
+    while (strcmp(atual2->dados.identificador, _ponto) != 0) {
+        atual2 = atual2->proximo1;
+        if (strcmp(atual2->dados.identificador, _ponto) == 0) {
+            verifica_ponto = 1;
+        }
+    }
+    
+    // devolve as coordenadas do ponto  pretendido
+    if (verifica_identidade == 1 && verifica_ponto == 1){
+        ponto.x = atual2->dados.x;
+        ponto.y = atual2->dados.y;
+        return ponto;
+    }
+
     return ponto;
 }
+

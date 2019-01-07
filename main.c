@@ -1,6 +1,11 @@
 /*
+    Projeto Final de Programação:
+    -Programa que consiste na simulação de uma linha férrea em que
+    diversos parâmetros podem ser alterados através do input
+    do utilizador
+
     Pedro Machado ( ist190157 ) | 
-                                |   12/2018
+                                |   07/01/2019
     Rafael Ferreira (ist190173) | 
 */
 
@@ -27,13 +32,13 @@ int main(int argc, char *argv[])
     int num_linhas = 0; // número de linhas do ficheiro config
 
     JANELA janela; //será definido no ficheiro config
-    SDL_Renderer* g_pRenderer = NULL; 
-    SDL_Window *window = NULL;         
-    TTF_Font *serif = NULL;
+    SDL_Renderer* g_pRenderer = NULL; //inicialização do renderer
+    SDL_Window *window = NULL; // inicialização da janela gráfica     
+    TTF_Font *serif = NULL; // inicialização da fonte textual
     SDL_Event event;
-    int delay = 150;
-    int quit = 0;
-    COORDENADAS coords;
+    int delay = 150; // tempo entre cada atualização da janela
+    int quit = 0; // usado para sair do programa assim que a janela é fechada
+    COORDENADAS coords; // coordenadas dos comboios
 
     // alocação de memória para os comboios
     comboios = (COMBOIO **)calloc(CMAX, sizeof(COMBOIO *));
@@ -95,6 +100,9 @@ int main(int argc, char *argv[])
     // leitura do config
     verificador = lerconfig(argv[1], dados, &num_linhas);
 
+    // dimensões da janela gráfica
+    janela = tamanhoJanela(janela, num_linhas, dados);
+
     // validação da leitura
     if (verificador == -1) {
         // desalocação de memória
@@ -104,7 +112,6 @@ int main(int argc, char *argv[])
         free(comboios);
 
         for (i = 0; i < FMAX; i++) {
-            free(ferrovias[i]->dados);
             free(ferrovias[i]);
         }
         free(ferrovias);
@@ -119,7 +126,7 @@ int main(int argc, char *argv[])
 
     // processamento dos dados
     processacomboio(comboios, &num_comboios, num_linhas, dados);
-    janela = tamanhoJanela(janela, num_linhas, dados);
+
     verificador = processaferrovias(ferrovias, &num_ferrovias, num_linhas, dados);
     if (verificador == -1) {
         // desalocação de memória
@@ -129,7 +136,28 @@ int main(int argc, char *argv[])
         free(comboios);
 
         for (i = 0; i < FMAX; i++) {
-            free(ferrovias[i]->dados);
+            free(ferrovias[i]);
+        }
+        free(ferrovias);
+
+        for (i = 0; i < FILEMAX; i++) {
+        free(dados[i]);
+        }
+        free(dados);
+
+        return -1;
+    }
+
+    // processamento das ligações
+    verificador = processaligar(ferrovias, num_ferrovias, num_linhas, dados);
+    if (verificador == -1) {
+        // desalocação de memória
+        for (i = 0; i < CMAX; i++) {
+            free(comboios[i]);
+        }
+        free(comboios);
+
+        for (i = 0; i < FMAX; i++) {
             free(ferrovias[i]);
         }
         free(ferrovias);
@@ -164,7 +192,6 @@ int main(int argc, char *argv[])
                 free(comboios);
 
                 for (i = 0; i < num_ferrovias; i++) {
-                    free(ferrovias[i]->dados);
                     free(ferrovias[i]);
                 }
                 free(ferrovias);
@@ -183,7 +210,6 @@ int main(int argc, char *argv[])
                     free(comboios);
 
                     for (i = 0; i < num_ferrovias; i++) {
-                        free(ferrovias[i]->dados);
                         free(ferrovias[i]);
                     }
                     free(ferrovias);
@@ -196,27 +222,6 @@ int main(int argc, char *argv[])
 
                 break;
             case 2:
-                /*verificador = menu2(ferrovias, &num_ferrovias);
-
-                if (verificador == -1) {
-                    // desalocação de memória
-                    for (i = 0; i < num_comboios; i++) {
-                        free(comboios[i]);
-                    }
-                    free(comboios);
-
-                    for (i = 0; i < num_ferrovias; i++) {
-                        free(ferrovias[i]->dados);
-                        free(ferrovias[i]);
-                    }
-                    free(ferrovias);
-
-                    printf("\n"); // por questões estéticas
-
-                    return -1; // saída do programa
-
-                }*/
-
                 break;
             case 3:
                 verificador = menu3(comboios, num_comboios);
@@ -229,7 +234,6 @@ int main(int argc, char *argv[])
                     free(comboios);
 
                     for (i = 0; i < num_ferrovias; i++) {
-                        free(ferrovias[i]->dados);
                         free(ferrovias[i]);
                     }
                     free(ferrovias);
@@ -252,7 +256,6 @@ int main(int argc, char *argv[])
                     free(comboios);
 
                     for (i = 0; i < num_ferrovias; i++) {
-                        free(ferrovias[i]->dados);
                         free(ferrovias[i]);
                     }
                     free(ferrovias);
@@ -275,7 +278,6 @@ int main(int argc, char *argv[])
                     free(comboios);
 
                     for (i = 0; i < num_ferrovias; i++) {
-                        free(ferrovias[i]->dados);
                         free(ferrovias[i]);
                     }
                     free(ferrovias);
@@ -288,8 +290,6 @@ int main(int argc, char *argv[])
 
                 break;
             case 6:
-                //janela = tamanhoJanela(janela, num_linhas, dados);
-
                 InitEverything(janela.dimx, janela.dimy, &serif, &window, &g_pRenderer);
                 while( quit == 0 )
                 {
@@ -302,15 +302,20 @@ int main(int argc, char *argv[])
                             return 0;
                         }
                     }  
-                    // render da ferrovia
-                    renderRailroad(g_pRenderer, *ferrovias, num_ferrovias, serif);
+                    // o renderer fica da cor branca
+				    SDL_SetRenderDrawColor( g_pRenderer, 255, 255, 255, 255 );
+
+				    // limpa a janela
+				    SDL_RenderClear( g_pRenderer );
+                    // render das ferrovias
+                    renderRailroad(g_pRenderer, ferrovias[0], serif, num_ferrovias);
+                    renderRailroad(g_pRenderer, ferrovias[1], serif, num_ferrovias);
                     // render do menu interativo
                     renderMenu (g_pRenderer, janela.dimx, janela.dimy, serif);
                     // render dos comboios
                     for(i = 0; i < num_comboios; i++){
-                        printf("%d", num_comboios);
-                        coords = trainCoords(*ferrovias, comboios[i], num_ferrovias);
-                        renderTrains(g_pRenderer, comboios[i], serif, coords);
+                        coords = getCoords(ferrovias[0], comboios[i]->nome_ferrovia, comboios[i]->nome_ponto);
+                        renderTrains(g_pRenderer, *comboios[i], serif, coords);
                     }
                     // aparece no ecrã todas as alterações feitas previamente
                     SDL_RenderPresent(g_pRenderer);
